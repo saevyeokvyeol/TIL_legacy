@@ -135,3 +135,217 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 
 {line-height: normal | 길이} /* 줄 사이 간격 조절 */
 ```
+
+### list
+
+```css
+{list-style: list-style-type; list-style-position; list-style-image;}
+
+{list-style-type: 모양;}
+/*
+	list 마커 모양을 바꿈
+	list-style-image와 동시에 사용하면 이미지 로딩이 불가능할 때 적용됨
+	모양 종류: dist, circle, square, decimal, lower-roman, upper-roman, lower-alpha, upper-alpha, none
+*/
+
+{list-style-position: inside | outside(기본값);}
+/*
+	list 위치를 바꿈
+	inside는 outside보다 들여쓰기가 더 들어감
+*/
+
+{list-style-image: none(기본값) | url(경로);}
+/*
+	list 마커 모양을 이미지로 바꿈
+	list-style-type과 동시에 사용하면 이미지 로딩이 불가능할 때 적용됨
+*/
+```
+
+### background
+
+```css
+{background: background-color; background-image; background-repeat; background-attachment; background-position;}
+/* 배경 속성을 한 번에 줄 때 사용 */
+
+{background-color: 색상;}
+/* 배경 색상을 설정할 때 사용 */
+
+{background-image: none(기본값) | url(경로);}
+/* 배경 이미지를 설정할 때 사용 */
+
+{background-repeat: no-repeat | repeat | repeat-x | repeat-y;}
+/*
+	배경 이미지를 설정할 때 이미지 연속 출력 여부 설정
+	no-repeat: 연속X
+	repeat: 가로 세로 연속
+	repeat-x: 가로로 연속
+	repeat-y: 세로로 연속
+*/
+
+{background-attachment: fixed(고정) | scroll(스크롤 시 이동) | local(컨텐츠와 함께 이동);}
+/* 배경 이미지를 설정할 때 이미지 고정 여부 설정 */
+
+{background-position: 길이 | 퍼센트 | 위치;}
+/*
+	배경 이미지를 설정할 때 시작점 설정
+	위치값: top, bottom, left, right, center
+*/
+```
+
+### box 크기 조정
+
+```css
+{margin: 길이 | 퍼센트 (n | n, n | n, n, n | n, n, n, n) | auto;}
+/*
+	box 마진값 지정
+	margin-top, margin-right, margin-bottom, margin-left를 따로 설정 가능
+	길이/퍼센트 설정 규칙: n = 상하좌우; n, n = 상하, 좌우; n, n, n = 상, 좌우, 하; n, n, n, n = 상, 우, 하, 좌
+*/
+
+{padding: 길이 | 퍼센트 (n | n, n | n, n, n | n, n, n, n) | auto;}
+/*
+	box 패딩값 지정
+	padding-top, padding-right, padding-bottom, padding-left를 따로 설정 가능
+	길이/퍼센트 설정 규칙: n = 상하좌우; n, n = 상하, 좌우; n, n, n = 상, 좌우, 하; n, n, n, n = 상, 우, 하, 좌
+*/
+```
+
+```css
+{border: border-width; border-style; border-color;} /* 보더 속성 한 번에 지정 */
+
+{border-width: 길이(n | n, n | n, n, n | n, n, n, n) | thin | medium | thick;}
+/*
+	box 테두리 굵기 지정
+	border-top-width, border-right-width, border-bottom-width, border-left-width를 따로 설정 가능
+	길이 설정 규칙: n = 상하좌우; n, n = 상하, 좌우; n, n, n = 상, 좌우, 하; n, n, n, n = 상, 우, 하, 좌
+*/
+
+{border-color: 색상(c | c, c | c, c, c | c, c, c, c);}
+/*
+	box 테두리 색상 지정
+	border-top-color, border-right-color, border-bottom-color, border-left-color를 따로 설정 가능
+	색상 설정 규칙: c = 상하좌우; c, c = 상하, 좌우; c, c, c = 상, 좌우, 하; c, c, c, c = 상, 우, 하, 좌
+*/
+
+{border-radius: 길이 | 퍼센트 (n | n, n | n, n, n | n, n, n, n) | auto;}
+/*
+	box 테두리 둥글림 지정
+	border-top-radius, border-right-radius, border-bottom-radius, border-left-radius를 따로 설정 가능
+	길이/퍼센트 설정 규칙: n = 상하좌우; n, n = 오른위/왼아래, 왼위/오른아래; n, n, n = 오른위, 왼위/오른아래, 왼아래; n, n, n, n = 오른위, 오른아래, 왼아래, 왼위
+*/
+
+{border-style: none | datted | dashed | solid | double | groove | ridge | inset | outset;}
+/*
+	box 테두리 모양 지정
+	border-top-style, border-right-style, border-bottom-style, border-left-style를 따로 설정 가능
+	모양 설정 규칙: s = 상하좌우; s, s = 상하, 좌우; s, s, s = 상, 좌우, 하; s, s, s, s = 상, 우, 하, 좌
+*/
+```
+
+```css
+{box-sizing: content-box(기본값) | border-box;}
+/*
+	box의 패딩값과 테두리 굵기에 상관없이 박스를 정해진 크기 내로 고정시킬 때 사용
+	border-box: 설정된 width, height 길이 안에서 패딩값과 테두리 굵기를 적용시킨 뒤 비율에 맞춰 축소
+*/
+```
+
+### box 위치 조정
+
+```css
+{display: 키워드;}
+/*
+	박스 배치 방식을 정할 때 사용
+	none: 렌더링X(공간 차지X), 비가시화
+	inline: 요소의 크기만큼 공간을 차지함(width, height 설정X), 한 줄에 여러 박스 배치 가능, 상하 margin 적용X
+	block: 설정한 width, height만큼 공간을 차지함, 한 줄에 한 박스만 배치 가능
+	inline-block: 설정한 width, height만큼 공간을 차지함, 한 줄에 여러 박스 배치 가능
+*/
+```
+
+```css
+{position: 키워드;}
+/*
+	박스 위치 방식을 정할 때 사용
+	static을 제외하고는 top, left, bottom, right, z-index(요소가 겹칠 경우 우선 순위 설정) 속성으로 위치를 지정함
+
+	static: 기본값, html에서 생성된 순서대로 위치시킴
+	relative: 생성된 위치의 상대 위치에 배치, 다른 요소는 해당 요소의 생성된 위치를 비워둠
+	absolute: 페이지의 절대 위치에 배치
+	sticky: 화면의 절대 위치에 고정(스크롤 이동해도 위치를 벗어나지 않고 따라붙음)
+*/
+```
+
+```css
+{float: none | left | right;}
+/*
+	요소들의 어울림 배치 지정
+	none: 어울리지 않음
+	left: 생성된 순서에 따라 왼쪽으로 어울림
+	right: 생성된 순서에 따라 오른쪽으로 어울림
+*/
+
+{clear: none | left | right | both;}
+/*
+	어울림 배치 지우기
+	none: 아무 것도 지우지 않음
+	left: 왼쪽 어울림 지우기
+	right: 오른쪽 어울림 지우기
+	both: 양쪽 어울림 지우기
+*/
+```
+
+```css
+{overflow: visible | hidden | scroll | auto;}
+/*
+	박스 안의 요소가 박스 범위를 넘어섰을 때 처리 방법 설정
+	visible: 기본값, 박스의 범위를 넘기며 출력
+	hidden: 박스 범위를 넘기면 표시X
+	scroll: 수직, 수평 스크롤바를 생성함
+	auto: 필요한 부분만 스크롤바를 생성함
+*/
+```
+
+```css
+{visibility: visible | hidden;}
+/*
+	가시화 설정
+	visible: 기본값, 가시화
+	hidden: 비가시화, but 공간은 차지함
+*/
+```
+
+## 반응형 웹
+
+### 내부 스타일 시트Internal
+
+```html
+<style type="text/css" media="screen and (min-width: 길이) and (max-width: 길이)">
+	selector {속성: 값; 속성: 값; 속성: 값; ...}
+</style>
+<!-- style 태그 전체에 특정 값을 줘 해당 값을 만족할 때 스타일을 적용시킴 -->
+```
+
+```html
+<style type="text/css">
+	@import url(css 파일 경로) screen and (min-width: 길이) and (max-width: 길이);
+</style>
+<!-- 태그 안에서 @import를 사용해 값을 만족할 때 해당 CSS파일을 적용시킴 -->
+```
+
+### 외부 스타일 시트External
+
+- 여러 웹페이지에서 동일한 형식의 CSS를 적용해야 할 때 주로 사용
+
+```html
+<!-- HTML -->
+<link rel="stylesheet" href="CSS 경로">
+```
+
+```css
+/* CSS */
+@import screen and (min-width: 길이) and (max-width: 길이);
+selector {속성: 값; 속성: 값; 속성: 값; ...}
+
+/* CSS 파일 내부에 직접 media 속성을 줘 값을 만족할 때 스타일을 적용시킴 */
+```
