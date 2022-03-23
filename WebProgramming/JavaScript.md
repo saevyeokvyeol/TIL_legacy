@@ -254,7 +254,9 @@ function 함수명(매개변수, 매개변수...){
 함수명(); // 리턴값
 // 매개변수의 갯수가 달라도 호출되기 때문에 오버로딩할 필요X
 // 오버로딩할 경우 맨 마지막에 생성된 함수만 호출됨
+```
 
+```jsx
 // 익명 함수 선언
 let 변수명 = function(매개변수, 매개변수...){
 	실행문;
@@ -262,6 +264,18 @@ let 변수명 = function(매개변수, 매개변수...){
 }
 
 // 익명 함수 호출
+result = 변수명; // 함수
+result = 변수명(); // 리턴값
+```
+
+```jsx
+// 람다식 함수 선언
+let 변수명 = (매개변수, 매개변수...) => {
+	실행문;
+	return 리턴값;
+}
+
+// 람다식 함수 호출
 result = 변수명; // 함수
 result = 변수명(); // 리턴값
 ```
@@ -373,4 +387,81 @@ today.setSecond(); // 변수에 저장된 초를 변경하는 함수
 ```jsx
 배열명[n] = 값; // 배열의 n번째 자리에 값 입력
 배열명.push(값); // 배열의 끝에 값 추가
+```
+
+## HTML 요소 가져오기
+
+### 네임값으로 가져오기
+
+```jsx
+document.name값[.name값 ...]; // name값으로 가져오기
+```
+
+### 속성값으로 가져오기
+
+```jsx
+document.getElementByClass("class값"); // class 값으로 가져오기
+document.getElementById("id값"); // id 값으로 가져오기
+document.getElementByTagName("tagName값"); // tagName 값으로 가져오기
+```
+
+### 특정 요소 기준으로 가져오기
+
+```jsx
+기준 요소.parentNode; // 부모 요소 가져오기
+기준 요소.childNodes; // 자식 요소 리스트 가져오기
+기준 요소.firstChild; // 첫 번째 자식 요소 가져오기
+기준 요소.lastChild; // 마지막 자식 요소 가져오기
+기준 요소.previousSibling; // 이전 형제 요소 가져오기
+기준 요소.nextSibling; // 다음 형제 요소 가져오기
+```
+
+## HTML 적용
+
+### div, span에 텍스트 입력
+
+```jsx
+적용할 대상.innerText = "텍스트"; // 대상에 텍스트를 입력하되, 태그 적용X
+적용할 대상.innerHTML = "텍스트"; // 태그를 적용해 텍스트 입력
+```
+
+### form 조작
+
+- input text
+    
+    ```jsx
+    적용할 대상.value; // input text에 입력된 텍스트 가져오기
+    적용할 대상.value = "텍스트"; // input text에 값 입력
+    ```
+    
+- input radio/check
+    
+    ```jsx
+    radioCheckName값; // name값이 같은 라디오/체크 버튼을 리스트로 가져옴
+    radioCheckName값[n]; // name값이 같은 라디오/체크 버튼 중 n번째 체크 버튼을 가져옴
+    
+    radioCheckName값[n].check; // n번째 라디오/체크 버튼의 선택 여부를 가져옴
+    radioCheckName값[n].value; // n번째 라디오/체크 버튼의 밸류값을 가져옴
+    ```
+    
+- select
+    
+    ```jsx
+    select.length; // select의 옵션의 갯수를 가져옴
+    
+    select.value; // select에서 선택한 옵션의 value값을 가져옴
+    select[n].value; // select에서 n번째 옵션의 value값을 가져옴
+    
+    select.selectedIndex; // select에서 선택한 옵션의 index값을 가져옴
+    
+    select.options[n] = new Option("값", "value값"); // select의 n번째 옵션을 추가/덮어쓰기함
+    
+    select.options[n] = null; // select의 n번째 옵션을 삭제함
+    ```
+    
+
+## CSS 적용
+
+```jsx
+적용할 대상.style.속성 = "값";
 ```

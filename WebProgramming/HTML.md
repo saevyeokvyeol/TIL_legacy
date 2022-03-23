@@ -115,12 +115,12 @@
 	대표적인 인라인 요소
 
 	속성: target="_self | _blank | _top | _parent | 창이름"
-				target으로 이동할 페이지가 열릴 창을 지정할 수 있음
-				_self: 현재 탭에서 열림(기본값)
-				_blank: 새 탭(설정에 따라 새 창)에서 열림
-				_top: 부모가 존재할 경우 최상단 브라우징에서, 없을 경우 현재 탭에서 열림
-				_parent: 부모가 존재할 경우 부모에, 없을 경우 현재 탭에서 열림
-				창이름: 지정된 타겟(= name="속성")에서 열림
+	target으로 이동할 페이지가 열릴 창을 지정할 수 있음
+	_self: 현재 탭에서 열림(기본값)
+	_blank: 새 탭(설정에 따라 새 창)에서 열림
+	_top: 부모가 존재할 경우 최상단 브라우징에서, 없을 경우 현재 탭에서 열림
+	_parent: 부모가 존재할 경우 부모에, 없을 경우 현재 탭에서 열림
+	창이름: 지정된 타겟(= name="속성")에서 열림
 -->
 <a href="이동할 경로 | id">content</a>
 
@@ -181,9 +181,9 @@
 <!-- form 선언: 선언하지 않으면 form 내부 정보 전달 불가 -->
 <form action="submit되었을 때 이동할 페이지" method="get | post | ..." name="" | id="">
 <!-- method = "get" - 입력된 값이 url 주소에 보여지면서 전송됨(생략 시 기본값)
-											보안상 주로 select 전용으로 사용
-							"post" - 전송되는 정보들이 request의 body 영역에 숨겨져 전송됨
-												update, delete, select일 때 많이 사용--> 
+					보안상 주로 select 전용으로 사용
+	"post" - 전송되는 정보들이 request의 body 영역에 숨겨져 전송됨
+						update, delete, select일 때 많이 사용--> 
 <!-- name="" | id="": JS나 jQuery에서 form에 접근할 때 사용 -->
 	<input...>
 </form>
@@ -214,7 +214,7 @@
 <input type="button" value="버튼에 표시되는 텍스트"> <!-- 버튼 -->
 <input type="file" name="file">
 <!-- file 버튼: file을 첨부할 때 사용, 다른 버튼과 달리 name 필수
-								file 버튼을 사용할 때는 반드시 method는 post, form 요소 속성으로 enctype="multipart/form-data"를 설정해야 함 -->
+	file 버튼을 사용할 때는 반드시 method는 post, form 요소 속성으로 enctype="multipart/form-data"를 설정해야 함 -->
 <input type="submit" value="버튼에 표시되는 텍스트"> <!-- submit 버튼: form에 입력된 내용을 전송함 -->
 <input type="reset" value="버튼에 표시되는 텍스트"> <!-- reset 버튼: form에 입력된 내용이 웹페이지가 로딩되었을 때 초기 상태로 돌아감 -->
 ```
