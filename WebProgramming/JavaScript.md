@@ -366,6 +366,22 @@ today.setMinutes(); // 변수에 저장된 분을 변경하는 함수
 today.setSecond(); // 변수에 저장된 초를 변경하는 함수
 ```
 
+### 문자열 → 코드 변환 함수
+
+```jsx
+eval("문자열");
+/*
+	인수로 들어온 문자열을 JS 코드로 만듦
+	어떤 코드가 들어가도 JS 코드로 만들기 때문에 보안에 취약해 권장X
+*/
+
+new Function("return 문자열")();
+/*
+	문자열을 JS 코드로 만듦
+	eval() 대체용으로 사용
+*/
+```
+
 ## 배열
 
 ### 특징
@@ -416,10 +432,12 @@ document.name값; // name 값으로 가져오기
 기준 요소.nextSibling; // 다음 형제 요소 가져오기
 ```
 
-### img를 배열로 가져오기
+### img 가져오기
 
 ```jsx
 document.images[index]; // html 파일 내의 모든 이미지를 선언순대로 배열로 만들어 가져옴
+document.name값; // img name 속성의 값으로 가져오기 
+/* 매개변수로 name값을 받을 때 "name값"으로 따옴표를 사용해 넘기면 new Function을 사용해 변환해야 하므로 주의 */
 ```
 
 ## HTML 적용
@@ -497,8 +515,52 @@ document.images[index]; // html 파일 내의 모든 이미지를 선언순대�
     </script>
     ```
 
+### image
+
+- img 변경
+    
+    ```jsx
+    적용할 대상.src = "경로"; // 대상 이미지를 경로 이미지로 변경함
+    
+    적용할 대상.width = "너비"; // 대상 이미지의 html 너비를 변경함
+    적용할 대상.height = "높이"; // 대상 이미지를 html 높이를 변경함
+    ```
+
+### url 변경
+
+```jsx
+location.href = "경로";
+// 현재 창의 url 주소를 입력한 경로로 변경함
+```
+
 ## CSS 적용
 
 ```jsx
 적용할 대상.style.속성 = "값";
+```
+
+## 창 제어
+
+### 새 창 열기
+
+```jsx
+window.open("경로", "이름", "속성", replace);
+// a 태그와 달리 새 창에 다양한 속성을 부여할 수 있음
+```
+
+### 새 창에서 부모창 접근
+
+```jsx
+opener.부모창 요소;
+// open() 함수를 통해 열린 새 창에서는 opener를 이용해 부모창에 있는 요소에 접근할 수 있음
+```
+
+### iframe 창 제어
+
+```html
+<a target="name값"></a>
+<!-- HTML만 사용할 경우: a 태그의 target값으로 iframe 영역의 name값을 입력하면 해당 iframe에서 경로가 열림 -->
+
+<a onclick="top.name값.location.href='경로'"></a>
+<!-- JS에서 location.href를 사용할 경우: 상위 부모 페이지로 올라간 후 name값을 입력해야 해당 iframe에서 경로가 열림 -->
 ```
