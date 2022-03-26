@@ -402,7 +402,7 @@ document.name값[.name값 ...]; // name값으로 가져오기
 ```jsx
 document.getElementByClass("class값"); // class 값으로 가져오기
 document.getElementById("id값"); // id 값으로 가져오기
-document.getElementByTagName("tagName값"); // tagName 값으로 가져오기
+document.name값; // name 값으로 가져오기
 ```
 
 ### 특정 요소 기준으로 가져오기
@@ -414,6 +414,12 @@ document.getElementByTagName("tagName값"); // tagName 값으로 가져오기
 기준 요소.lastChild; // 마지막 자식 요소 가져오기
 기준 요소.previousSibling; // 이전 형제 요소 가져오기
 기준 요소.nextSibling; // 다음 형제 요소 가져오기
+```
+
+### img를 배열로 가져오기
+
+```jsx
+document.images[index]; // html 파일 내의 모든 이미지를 선언순대로 배열로 만들어 가져옴
 ```
 
 ## HTML 적용
@@ -458,7 +464,38 @@ document.getElementByTagName("tagName값"); // tagName 값으로 가져오기
     
     select.options[n] = null; // select의 n번째 옵션을 삭제함
     ```
+
+- submit, reset
     
+    ```html
+    <form onsubmit="return false" onreset="return false">
+    	<input type="submit">
+    	<input type="reset">
+    	<!--
+    		submit과 reset은 input이 아니라 form에 함수를 적용함
+    		onsubmit과 onreset에서 false가 리턴되면 submit과 reset을 실행하지 않음
+    		(함수에서만 리턴하면 적용X onsubmit, onreset에서 다시 처리해야 적용)
+    	-->
+    </form>
+    ```
+    
+    ```html
+    <!-- button을 submit 버튼, reset 버튼으로 만들기	-->
+    <form>
+    	<input type="button" onclick="submitBtn(form)">
+    	<input type="button" onclick="resetBtn(form)">
+    </form>
+    	
+    <script type="text/javascript">
+    	function submitBtn(fr) {
+    		fr.action="경로"; // 폼 액션 변경
+    		fr.submit(); // 폼 전송
+    	}
+    	function resetBtn(fr) {
+    		fr.reset(); // 폼 초기화
+    	}
+    </script>
+    ```
 
 ## CSS 적용
 
