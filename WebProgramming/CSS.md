@@ -61,7 +61,7 @@ element .class {} /* 해당하는 요소의 자식 중에서 클래스 값이 �
 element1 element2 {} /* 요소 1의 자식 중에서 요소 2인 것에만 적용 */
 element1 > element2 {} /* 요소 1을 직접적인 부모로 두고 있는 요소 2에만 적용 */
 
-[attripute] {} /* target 속성을 가진 요소에만 적용 */
+[attripute] {} /* 특정 속성을 가진 요소에만 적용 */
 [attripute=value] {} /* 속성값이 value인 요소에만 적용 */
 [attripute~=value] {} /* 속성값에 value가 포함된(여러 속성값 중 하나) 요소에만 적용 */
 [attribute|=value] {} /* 속성값이 value거나 value로 시작하는 요소에만 적용 */
