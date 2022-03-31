@@ -252,3 +252,67 @@ application.removeAttribute(name);
 application.getRealPath(path);
 // 실행된 문서의 경로를 가져옴
 ```
+
+### AtomicInteger
+
+```java
+/*
+	동기화 처리되어 application 등에 저장한 뒤 값이 변경되면 재저장하지 않아도 자동 변경됨
+*/
+
+AtomicInteger ai = new AtomicInteger();
+// 새 AtomicInteger 객체를 만듦(초기값 0);
+
+ai.intValue();
+// 현재값을 가져옴
+
+ai.incrementAndGet();
+// 값을 1 증가시킴
+```
+
+### Cookie
+
+```java
+javax.servlet.http.Cookie
+/*
+	서버가 사용자 정보를 클라이언트 PC에 저장하는 기술
+	한 번에 4kb, 총 300개 저장 가능
+	일정 기간이 지나면 자동 삭제됨
+*/
+
+Cookie cookie = new Cookie("name","value");
+// 새 쿠키 객체를 생성함(name과 value 모두 String 타입만 저장 가능)
+
+cookie.getMaxAge();
+// 쿠키 사용 가능 기간을 가져옴
+
+cookie.setMaxAge(max)
+/*
+	쿠키 사용 가능 기간 설정(초 단위)
+	매개변수로 0을 넣으면 쿠키가 삭제
+	-1을 넣으면 파일 생성X 브라우저 실행 동안 쿠키 정보 저장(종료 시 사라짐)
+*/
+
+cookie.setValue(cookie);
+// 쿠키 정보 수정(수정 시 setMaxAge 초기화)
+
+cookie.getName();
+// 쿠키에 설정된 name값 가져오기
+
+cookie.getValue();
+// 쿠키에 설정된 value값 가져오기 
+
+cookie.setPath(path)
+/*
+	쿠키의 유효 디렉토리(쿠키 사용 가능 영역) 설정
+	매개변수로 "/"를 넣을 경우 모든 문서에서 쿠키 사용 가능
+*/
+```
+
+```java
+response.addCookie(Cookie co);
+// 클라이언트에 정보 저장
+
+Cookie co [] = request.getCookies();
+// 클라이언트에 저장된 정보 모두 가져옴
+```
