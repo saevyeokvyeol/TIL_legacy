@@ -116,7 +116,7 @@ response.sendRedirect("url주소?변수명=" + URLEncoder.encode(값, request.ge
 
 ## JSP 내장객체
 
-### request
+### HttpServletRequest: request
 
 ```java
 javax.servlet.http.HttpServlerRequest;
@@ -153,7 +153,7 @@ request.getRequestURL();
 // 접속한 문서의 url 주소를 가져옴
 ```
 
-### response
+### HttpServletResponse: response
 
 ```java
 javax.servlet.http.HttpServletResponse
@@ -184,7 +184,7 @@ response.setError(code);
 // 에러를 발생시킴
 ```
 
-### session
+### HttpServletResponse: response
 
 ```java
 HttpSession
@@ -228,7 +228,7 @@ long time = session.getCreationTime();
 // 세션이 시작된 시간을 가져옴
 ```
 
-### application
+### ServletContext: application
 
 ```java
 ServletContext
@@ -241,7 +241,9 @@ application.setAttribute(name, value);
 // 정보를 저장함
    
 Enumeration e = application.getAttributeNames();
-// 저장된 name값을 모두 가져옴
+/*
+	저장된 name값을 모두 가져옴
+*/
 
 application.getAttribute(name);
 // name값이 같은 정보를 가져옴
@@ -253,22 +255,22 @@ application.getRealPath(path);
 // 실행된 문서의 경로를 가져옴
 ```
 
-### AtomicInteger
-
-```java
-/*
-	동기화 처리되어 application 등에 저장한 뒤 값이 변경되면 재저장하지 않아도 자동 변경됨
-*/
-
-AtomicInteger ai = new AtomicInteger();
-// 새 AtomicInteger 객체를 만듦(초기값 0);
-
-ai.intValue();
-// 현재값을 가져옴
-
-ai.incrementAndGet();
-// 값을 1 증가시킴
-```
+- AtomicInteger
+    
+    ```java
+    /*
+    	동기화 처리되어 application 등에 저장한 뒤 값이 변경되면 재저장하지 않아도 자동 변경됨
+    */
+    
+    AtomicInteger ai = new AtomicInteger();
+    // 새 AtomicInteger 객체를 만듦(초기값 0);
+    
+    ai.intValue();
+    // 현재값을 가져옴
+    
+    ai.incrementAndGet();
+    // 값을 1 증가시킴
+    ```
 
 ### Cookie
 
@@ -315,4 +317,142 @@ response.addCookie(Cookie co);
 
 Cookie co [] = request.getCookies();
 // 클라이언트에 저장된 정보 모두 가져옴
+```
+
+### exception
+
+```java
+// 문서 첫 줄에 errorPage="" 설정해 오류 발생 시 에러 페이지로 이동하는 방법
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" errorPage="에러페이지 url경로"%>
+/*
+	페이지에서 일어나는 모든 에러를 한 번에 처리할 수 있지만 에러 페이지를 하나만 사용할 수 있음
+	web.xml 문서 설정과 함께 사용할 때 이 방법이 우선순위가 높음
+	(=둘 다 설정할 경우 이 방법이 실행됨)
+*/
+```
+
+```xml
+<!-- web.xml 문서에 설정하는 방법 -->
+
+<error-page>
+	<exception-type>처리할 exception 종류</exception-type>
+	<location>이동할 에러페이지</location>
+</error-page>
+<!--
+	처리할 exception 종류는 자동완성이 안되기 때문에 패키지명까지 수동 입력
+	이동할 에러페이지는 보통 루트에서 시작함: / = webapp
+	web.xml 문서는 서버가 시작할 때 한 번만 로딩되기 때문에 수정한 뒤에는 서버를 재시동해야 적용됨
+-->
+```
+
+```java
+// jsp 문서 에러 관련 메소드 사용 방법
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" isErrorPage="true"%>
+<%
+	response.setStatus(200);
+%>
+/*
+	isErrorPage="true" 설정하지 않으면 exception 레퍼런스 사용 불가
+	설정할 경우 해당 페이지의 상태코드가 500으로 고정돼 브라우저에 따라 출력되지 않을 수 있음
+	이를 방지하기 위해 response.setStatus() 메소드 사용해 상태코드를 200으로 변경
+*/
+```
+
+# Servlet
+
+## 문서 작성 및 사용 방법
+
+### 문서 작성
+
+```java
+public class 클래스명 extends HttpServlet { }
+// 반드시 public class여야 하며, HttpServlet 상속받아 필요한 메소드를 재정의해 작성함
+```
+
+### 문서 사용
+
+- web.xml 문서 설정
+
+```xml
+<!-- 서블릿 개체 생성 -->
+<servlet>
+	<servlet-name>서블릿 개체명 설정</servlet-name>
+	<servlet-class>자바 파일 경로</servlet-class>
+	<load-on-startup>n(제작 순서)</load-on-startup>
+	<!-- load-on-startup 옵션을 설정하면 tomcat이 start될 때 미리 생성함 -->
+</servlet>
+
+<!-- 생성한 서블릿을 url에서 호출 -->
+<servlet-mapping>
+	<servlet-name>서블릿 개체명</servlet-name>
+  <url-pattern>url 주소 설정(루트 기준)</url-pattern>
+</servlet-mapping>
+```
+
+- @annotation 설정
+
+```java
+public class 클래스명 extends HttpServlet { }
+// 반드시 public class여야 하며, HttpServlet 상속받아 필요한 메소드를 재정의해 작성함
+```
+
+## 웹페이지 구성
+
+```java
+// Servlet으로 웹페이지 문서를 만들기 위해서는 jsp와 달리 아래처럼 직접 마크업을 입력해야 함
+
+// 문자 인코딩 처리
+response.setContentType("text/html;charset=UTF-8");
+		
+// 브라우저 출력
+PrintWriter out = response.getWriter();
+
+out.println("<html>");
+out.println("<head><title>servlet</title></head>");
+
+out.println("<body>");
+out.println("<h1>빰빰빰</h1>");
+out.println("<h1>nununu</h1>");
+out.println("</body>");
+
+out.println("</html>");
+```
+
+## 기본 메소드
+
+```java
+init();
+/*
+	서블릿 문서가 초기화될 때 최초에 자동으로 실행됨
+	생성자와 비슷하게 객체가 생성된 후 반드시 해야 할 일이 있을 때 오버라이딩해 사용함
+*/
+
+service(ServletRequest request, ServletResponse response);
+/*
+	init이 실행된 후 호출됨(사용자 요청이 들어오면=새로고침되면 호출)
+	사용자 요청이 get 방식인지 post 방식인지 구분해 doGet() | doPost() 메소드를 호출함
+	요청방식에 상관없이 기능을 만들 경우 오버라이딩해 사용
+*/
+
+doGet(HttpServletRequest request , HttpServletResponse response);
+/*
+	사용자 요청이 get 방식일 경우 실행됨
+	요청방식을 구분해 기능을 만들 경우 오버라이딩해 사용
+*/
+
+doPost(HttpServletRequest request , HttpServletResponse response);
+/*
+	사용자 요청이 post 방식일 경우 실행됨
+	요청방식을 구분해 기능을 만들 경우 오버라이딩해 사용
+*/
+
+destory();
+/*
+	서블릿 문서가 종료될 때(=메모리에서 소멸될 때) 호출됨
+	종료할 때 반드시 해야 할 일이 있을 때 오버라이딩해 사용함
+*/
 ```
