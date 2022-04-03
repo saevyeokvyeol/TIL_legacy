@@ -272,7 +272,7 @@ application.getRealPath(path);
     // 값을 1 증가시킴
     ```
 
-### Cookie
+## Cookie
 
 ```java
 javax.servlet.http.Cookie
@@ -362,6 +362,234 @@ Cookie co [] = request.getCookies();
 */
 ```
 
+## 표현언어(Expression Language: EL)
+
+### 특징
+
+- jsp 2.0부터 새롭게 추가된 스크립팅 요소
+- 자바 객체와 속성값을 쉽게 가져올 수 있는 방법
+- ${표현식 | 속성명.메소드} 형태로 사용함
+- 표현식에는 정수형, 실수형, 문자열형, 논리형, null이 올 수 있으며 연산이 가능함
+
+### 연산자
+
+```html
+<!-- 산술 연산자 -->
+
+${A + B}
+<!-- A와 B를 더함 -->
+
+${A - B}
+<!-- A에서 B를 뺌 -->
+
+${A * B}
+<!-- A와 B를 곱함 -->
+
+${A / | div B}
+<!-- A를 B로 나눔 -->
+
+${A % | mod B}
+<!-- A를 B로 나눈 나머지 -->
+```
+
+```html
+<!-- 문자열 연결 -->
+
+${문자열.concat("문자열")}
+<!-- +로 문자열을 연결할 경우 NumberFormatException -->
+```
+
+```html
+<!-- 산술 연산자 -->
+
+${A == | eq B}
+<!-- A와 B가 같으면 true -->
+
+${A != | ne B}
+<!-- A와 B가 다르면 true -->
+
+${A > | gt B}
+<!-- A보다 B가 작으면 true -->
+
+${A < | lt B}
+<!-- A보다 B가 크면 true -->
+
+${A >= | ge B}
+<!-- A보다 B가 작거나 같으면 true -->
+
+${A <= | le B}
+<!-- A보다 B가 크거나 같으면 true -->
+```
+
+```html
+<!-- 삼항 연산자(조건 연산자) -->
+
+${조건식 ? 참 : 거짓}
+```
+
+```html
+<!-- 논리 연산자 -->
+
+${A && | and B}
+<!-- A와 B 둘 다 true면 true -->
+
+${A || | or B}
+<!-- A와 B 둘 중 하나가 true면 true -->
+
+${! | not A}
+<!-- A가 true면 false, false면 true-->
+```
+
+### 값 가져오기
+
+```html
+${pageScope.name값}
+<!-- page 기본 객체에 저장된 속성 가져오기 -->
+
+${requestScope.name값}
+<!-- request 기본 객체에 저장된 속성 가져오기 -->
+
+${sessionScope.name값}
+<!-- session 기본 객체에 저장된 속성 가져오기 -->
+
+${applicationScope.name값}
+<!-- application 기본 객체에 저장된 속성 가져오기 -->
+
+<!--
+	xxxScope 생략하고 name값만 써도 속성값 호출 가능
+	이 경우 우선순위(pageScope < requestScope < sessionScope < applicationScope)가 높은 속성이 호출됨
+-->
+```
+
+```html
+<!-- param 가져오기 -->
+
+${param.name값}
+<!-- request.getParameter("name값"); -->
+```
+
+### 메소드 호출
+
+```html
+<!-- 객체 생성 -->
+<jsp:useBean id="객체명" class="클래스 경로"></jsp:useBean>
+<jsp:useBean id="객체명" class="클래스 경로"/>
+```
+
+```html
+${객체명.변수명}
+<!-- 객체 내의 get변수명()(=getter) 메소드를 호출 -->
+```
+
+### 주요 메소드
+
+- 경로 출력
+    
+    ```html
+    ${pageContext.request.contextPath}
+    
+    <!-- a태그 등에서 경로 앞에 붙여 경로가 엉키는 것을 방지함 -->
+    ```
+    
+
+## jsp Standard Tag Library
+
+### 특징
+
+- jsp 2.0부터 새롭게 추가된 스크립팅 요소
+- 자바 객체와 속성값을 쉽게 가져올 수 있는 방법
+- ${표현식 | 속성명.메소드} 형태로 사용함
+- 표현식에는 정수형, 실수형, 문자열형, 논리형, null이 올 수 있으며 연산이 가능함
+
+### 주요 JSTL 태그
+
+- 문자 출력
+    
+    ```html
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c"%>
+    
+    <c:out value"값 | 변수명"></c:out>
+    <c:out value"값 | 변수명" excapeXml="true | false"/>
+    <!-- excapeXml값이 true(기본값)일 경우 값에 태그가 있으면 문자로 출력됨 -->
+    ```
+    
+- 변수 선언 및 삭제
+    
+    ```html
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c"%>
+    
+    <!-- 변수 선언 -->
+    <c:set var="변수명" value="값"></c:set>
+    <c:set var="변수명" value="값" scope="page|request|session|application"/>
+    <!-- scope값을 입력하면 해당 scope에 저장됨 -->
+    
+    <!-- 변수 삭제 -->
+    <c:set var="변수명"></c:set>
+    <c:set var="변수명"/>
+    ```
+    
+- 조건문
+    
+    ```html
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c"%>
+    
+    <!-- if -->
+    <c:if test="${ 조건식 }" var="결과를 저장할 변수명">
+    	실행문
+    </c:if>
+    <!-- var에 변수명을 입력하면 해당 변수에 조건식의 결과값이 저장됨 -->
+    
+    <!-- choose -->
+    <c:choose>
+    	<c:when test="${ 조건식1 }">
+    		실행문1
+    	</c:when>
+    	<c:when test="${ 조건식2 }">
+    		실행문2
+    	</c:when>
+    	<c:otherwise>
+    		실행문3
+    	</c:otherwise>
+    </c:choose>
+    <!-- 
+    	자바 if문처럼 조건식이 true인 실행문만 실행됨
+    	조건식이 모두 false일 때 otherwise가 실행됨
+    -->
+    ```
+    
+- 반복문
+    
+    ```html
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c"%>
+    
+    <!-- forEach -->
+    <c:forEach var="변수" begin="초기값" end="종료"[ step="증가치"]>
+    	실행문
+    </c:forEach>
+    <!--
+    	변수에 담긴 초기값이 1씩 증가하며 실행문을 반복함
+    	증가치를 입력하면 한 번 실행될 때마다 변수에 담긴 숫자가 증가치만큼 증가함
+    -->
+    
+    <c:forEach items="배열 | 자료구조" var="변수" [ varStatus="status변수"]>
+    	${변수}
+    </c:forEach>
+    <!--
+    	배열에 담긴 요소를 하나씩 꺼내옴
+    	varStatus를 설정할 경우 status변수.index로 번지수를, status변수.count로 꺼내온 갯수를 가져올 수 있음
+    -->
+    ```
+    
+- 문자 출력 형식
+    
+    ```html
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt"%>
+    
+    <fmt:formatNumber value="숫자값"></fmt:formatNumber>
+    <fmt:formatNumber value="숫자값"/>
+    <!-- 입력한 숫자값에 세 자리마다 콤마를 찍어 출력함 -->
+    ```
+
 # Servlet
 
 ## 문서 작성 및 사용 방법
@@ -390,14 +618,17 @@ public class 클래스명 extends HttpServlet { }
 <servlet-mapping>
 	<servlet-name>서블릿 개체명</servlet-name>
   <url-pattern>url 주소 설정(루트 기준)</url-pattern>
+	<!-- 여기서 설정한 url 주소를 호출하면 서블릿 개체가 출력됨 -->
 </servlet-mapping>
 ```
 
 - @annotation 설정
 
 ```java
+import javax.servlet.annotation.WebServlet;
+
+@WebServlet (loadOnStartup = 1, urlPatterns = "url 주소 설정(루트 기준)")
 public class 클래스명 extends HttpServlet { }
-// 반드시 public class여야 하며, HttpServlet 상속받아 필요한 메소드를 재정의해 작성함
 ```
 
 ## 웹페이지 구성
@@ -452,7 +683,97 @@ doPost(HttpServletRequest request , HttpServletResponse response);
 
 destory();
 /*
-	서블릿 문서가 종료될 때(=메모리에서 소멸될 때) 호출됨
+	서블릿 문서가 종료될 때(=서버가 종료될 때, 서블릿이 리로드될 때) 호출됨
 	종료할 때 반드시 해야 할 일이 있을 때 오버라이딩해 사용함
 */
+```
+
+## JSP 내장 객체(session, application) 가져오기
+
+```java
+// HttpSession 구하기
+HttpSession session = request.getSession();
+
+// ServletContext 구하기
+ServletContext application = request.getServletContext();
+```
+
+## init-param, context-param
+
+### init-param
+
+- web.xml에서 생성
+    
+    ```xml
+    <!-- 한 서블릿에서만 사용할 init-param 생성 -->
+    <servlet>
+    	<servlet-name></servlet-name>
+    	<servlet-class></servlet-class>
+    
+    	<init-param>
+    		<param-name>init변수명</param-name>
+    		<param-value>값</param-value>
+    	</init-param>
+    	<!-- servlet 등록 시 변수 등록 -->
+    
+    </servlet>
+    ```
+    
+- @annotation에서 생성
+    
+    ```java
+    import javax.servlet.annotation.WebServlet;
+    
+    @WebServlet (loadOnStartup = 1, urlPatterns = "url 주소 설정(루트 기준)"
+    	initParams = {
+    			@WebInitParam(name = "init변수명", value ="값"),
+    			@WebInitParam(name = "init변수명", value ="값")...
+    	})
+    public class 클래스명 extends HttpServlet { }
+    ```
+    
+- 호출 방법
+    
+    ```java
+    public class 클래스명 extends HttpServlet {
+    
+    	String 변수명;
+    	
+    	@Override
+    	public void init() throws ServletException {
+    		변수명= super.getInitParameter("init변수명");
+    		// initParam을 호출해 전역 변수로 저장해 사용
+    	}
+    }
+    ```
+    
+
+### context-param
+
+```xml
+<!-- ServletContext 영역에 저장되는(=모든 서블릿 문서가 공유하는) context-param 생성 -->
+<context-param>
+	<param-name>context변수명</param-name>
+	<param-value>값</param-value>
+</context-param>
+```
+
+```java
+public class 클래스명 extends HttpServlet {
+
+	String 변수명;
+	
+	@Override
+	public void init() throws ServletException {
+		ServletContext application = super.getServletContext();
+		application.getInitParameter("context변수명");
+		변수명= super.getInitParameter("context변수명");
+		// contextParam을 호출해 전역 변수로 저장해 사용
+	}
+}
+```
+
+```html
+<%= application.getInitParameter("fileName") %>
+<!-- JSP 문서에서 application을 이용해 꺼내 사용할 수 있음 -->
 ```

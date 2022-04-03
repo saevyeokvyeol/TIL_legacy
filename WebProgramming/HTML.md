@@ -198,7 +198,7 @@
 
 <fieldset>
 	<legend>박스 이름</legend> <!-- 필드셋에 이름을 설정 -->
-	<input type="check" name="속성" value="안내 메세지"> <!-- 체크 버튼: 같은 속성끼리는 name을 같게 쓰는 것을 권장(필수X) -->
+	<input type="checkbox" name="속성" value="안내 메세지"> <!-- 체크 버튼: 같은 속성끼리는 name을 같게 쓰는 것을 권장(필수X) -->
 	<input type="radio" name="속성" value="안내 메세지"> <!-- 라디오 버튼: name이 같은 라디오 버튼끼리는 하나만 선택 가능 -->
 </fieldset>
 
