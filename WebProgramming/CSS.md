@@ -145,7 +145,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 /*
 	list 마커 모양을 바꿈
 	list-style-image와 동시에 사용하면 이미지 로딩이 불가능할 때 적용됨
-	모양 종류: dist, circle, square, decimal, lower-roman, upper-roman, lower-alpha, upper-alpha, none
+	모양 종류: disk, circle, square, decimal, lower-roman, upper-roman, lower-alpha, upper-alpha, none
 */
 
 {list-style-position: inside | outside(기본값);}

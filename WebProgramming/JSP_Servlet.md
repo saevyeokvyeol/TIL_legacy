@@ -777,3 +777,192 @@ public class 클래스명 extends HttpServlet {
 <%= application.getInitParameter("fileName") %>
 <!-- JSP 문서에서 application을 이용해 꺼내 사용할 수 있음 -->
 ```
+
+## Filter
+
+### 특징
+
+- 사용자의 요청을 가로채 자동으로 사전 혹은 사후에 처리하는 것
+- 한글 인코딩 처리, 세션 유무 체크, log 기록, spring security 인증/권한, 유효성 체크 등에 사용
+- 필터는 여러 개 사용할 수 있으며, 모든 필터가 사전처리 된 후 사전처리 역순으로 사후처리됨
+- interface로 제공되어 implement하고 함수를 오버라이딩 해 사용함
+
+### 등록 및 매핑
+
+```xml
+<!-- 필터 파일을 생성해 작성한 뒤 등록 및 매핑을 완료해야 필터링 가능 -->
+
+<!-- 필터 등록 -->
+<filter>
+	<filter-name>필터 이름</filter-name>
+	<filter-class>필터 파일 경로</filter-class>
+</filter>
+
+<!-- 필터 매핑 -->
+<filter-mapping>
+	<filter-name>필터 이름</filter-name>
+	<url-pattern>필터링할 파일 url 경로1(루트 기준, 와일드카드 사용 가능, 여러 개)</url-pattern>
+	<url-pattern>필터링할 파일 url 경로2(여러 줄 입력 가능)</url-pattern>
+</filter-mapping>
+```
+
+```java
+// 필터 파일을 생성해 작성한 뒤 등록 및 매핑을 완료해야 필터링 가능
+
+@WebFilter(urlPatterns = { "필터링할 파일 url 경로" })
+```
+
+### 사용법
+
+```java
+// init() 메소드 오버라이딩
+
+@Override
+public void init(FilterConfig filterConfig) throws ServletException {
+	System.out.println("SampleFilter init() call");
+}
+// 파일이 열릴 때 호출됨
+```
+
+```java
+// doFilter() 메소드 오버라이딩
+
+@Override
+public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+		throws IOException, ServletException {
+	// 사전 처리
+	
+	// 실제 타겟 대상 호출: 타겟 대상 호출을 중심으로 사전 처리와 사후 처리가 나뉨
+	chain.doFilter(request, response);
+	
+	// 사후 처리
+}
+// 타겟 대상이 호출될 때 호출됨
+```
+
+```java
+// destroy() 메소드 오버라이딩
+
+@Override
+public void destroy() {
+	System.out.println("SampleFilter destroy() call");
+}
+// 파일이 재컴파일되거나 서버가 종료될 때 호출됨
+```
+
+### init-param
+
+- web.xml에서 생성
+    
+    ```xml
+    <!-- 한 서블릿에서만 사용할 init-param 생성 -->
+    
+    <filter>
+    	<filter-name>필터 이름</filter-name>
+    	<filter-class>필터 파일 경로</filter-class>
+    
+    	<init-param>
+    		<param-name>init변수명</param-name>
+    		<param-value>값</param-value>
+    	</init-param>
+    	<!-- filter 등록 시 변수 등록 -->
+    
+    </filter>
+    ```
+    
+- @annotation에서 생성
+    
+    ```java
+    @WebFilter(
+    		urlPatterns = { "/*" }, 
+    
+    		initParams = { 
+    				@WebInitParam(name = "init변수명", value = "값"),
+    				@WebInitParam(name = "init변수명", value = "값")...
+    		}
+    
+    )
+    ```
+    
+- 호출 방법
+    
+    ```java
+    public class 클래스명 implements Filter {
+    
+    	String 변수명;
+    	
+    	@Override
+    	public void init(FilterConfig filterConfig) throws ServletException{
+    		변수명= super.getInitParameter("init변수명");
+    		// initParam을 호출해 전역 변수로 저장해 사용
+    	}
+    }
+    ```
+
+## Log4j
+
+### 특징
+
+- 자바 어플리케이션을 쉽고 빠르게 로깅할 수 있도록 도와주는 오픈소스
+
+### properties 파일 형식
+
+```java
+log4j.rootLogger = debug, dailyfile, consoleOut
+
+// 콘솔 출력 형식
+log4j.appender.consoleOut = org.apache.log4j.ConsoleAppender
+
+log4j.appender.consoleOut.layout = org.apache.log4j.PatternLayout
+
+log4j.appender.consoleOut.layout.ConversionPattern=%5p ({%t} %F[%M]:%L) [%d] - %m%n
+
+// 파일 기록 형식
+log4j.appender.dailyfile = org.apache.log4j.DailyRollingFileAppender
+
+log4j.appender.dailyfile.File = 경로/파일명.log
+// 파일 저장 위치와 파일 이름 
+
+log4j.appender.dailyfile.Append = true
+// true일 경우 파일 이어쓰기, false일 경우 덮어쓰기
+
+log4j.appender.dailyfile.DatePattern='.'yyyy-MM-dd
+
+log4j.appender.dailyfile.layout = org.apache.log4j.PatternLayout
+
+log4j.appender.dailyfile.layout.ConversionPattern=%5p ({%t} %F[%M]:%L) [%d] - %m%n
+
+```
+
+## Listener
+
+### 특징
+
+- 특정 액션이 일어나면 호출되는 메소드가 정의된 interface
+- implement해 오버라이딩해 사용함
+
+### 주요 종류
+
+1. ServletContextListener
+    - 서버가 start되거나 stop될 때 호출되는 메소드 정의
+2. HttpSessionListener
+    - 세션이 시작될 때(=브라우저가 시작될 때) 혹은 세션이 종료될 때(=session.invalidate() 호출될 때, session timeout 될 때, 단순 브라우저 종료 시는 호출X) 호출되는 메소드 정의
+3. ServletRequestListener
+    - 요청이 start될 때, 요청이 stop될 때 호출되는 메소드 정의
+
+### 등록
+
+```xml
+<!-- 액션이 일어나면 자동으로 호출되기 때문에 매핑X -->
+
+<!-- 리스너 등록 -->
+<listener>
+	<listener-class>필터 파일 경로</listener-class>
+</listener>
+```
+
+```java
+// 액션이 일어나면 자동으로 호출되기 때문에 매핑X
+
+@WebListener
+```
