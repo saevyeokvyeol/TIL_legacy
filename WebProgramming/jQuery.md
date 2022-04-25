@@ -64,7 +64,7 @@ $.each(반복 대상, function(index, item){
 	index, item는 각각 번지수와 값의 변수명을 나타냄
 */
 
-$(selector).each(function(index, item){
+$(selector).each(function([index, item]){
 	실행문;
 });
 /*
