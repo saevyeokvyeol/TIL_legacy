@@ -2,7 +2,8 @@
 
 ## 개념
 
-- EJB의 단점을 보완해 나온 오픈 소스 프레임워크로 자바 기반의 경량 라이브러리 덩어리
+- 자바 기반의 경량 라이브러리 덩어리
+- EJB(Enterprise Java Bean)의 단점을 보완해 나온 오픈 소스 프레임워크
 - 복잡한 엔터프라이즈 어플리케이션 개발을 간단하게 만들어줌
 - 기능을 모듈로 제공하기 때문에 필요한 기능만 가져다 사용할 수 있음
 - 공공부문 정보화 산업 표준인 전자정부 프레임워크(eGov)가 스프링과 마이바티스를 기반으로 하기 때문에 국내에서 활성화됨
@@ -12,10 +13,11 @@
 
 - 가벼운 경량의 라이브러리 → 현재에는 다소 무거워짐
 - 기반 코드를 제공함
+- Maven 기반의 프로젝트: Maven이 의존 관계 라이브러리를 관리함
 
 ### Dependency Injection
 
-- 의존 관계 주입(=제어의 역행 IoC Inversion of Control)
+- 의존 관계 주입(=제어의 역행 IoC Inversion of Control 개념을 문법으로 적용한 것)
 - 필요한 객체를 개발자가 직접 생성❌ SpringContainer(=외부 조립기)가 적절하게 객체를 생성하고 주입하기 때문에 객체와 객체 간의 결합도가 느슨해짐
 
 ### 관점 지향 프로그래밍
@@ -51,6 +53,7 @@
 ### Dependency Injection
 
 - Dependency Injection(의존 관계 역전)
+    - Inversion of Control 개념을 문법화한 것
     - 각 클래스 간의 의존 관계를 빈 설정 정보를 바탕으로 컨테이너가 자동 연결해주는 것
     - 빈 설정 관계에 의존 관계가 필요하다는 정보만 주면 자동 연결됨
     - 객체 레퍼런스를 컨테이너에서 주입받아 실행 시 동적으로 의존관계 생성
@@ -96,7 +99,7 @@ MessageBean bean = context.getBean("아이디값", 클래스파일명.class); //
 bean.메소드명(); // 클래스의 메소드 호출
 ```
 
-### 예시 코드: 파라미터가 있는 클래스 생성
+### 예시 코드: 생성자 주입
 
 ```xml
 <!--
@@ -129,7 +132,29 @@ bean.메소드명(); // 클래스의 메소드 호출
 </bean>
 ```
 
-### 예시 코드: setter가 있는 클래스 생성
+### 예시 코드: setter 주입
+
+```xml
+<!--
+	Primitive와 String 타입은 value로 세터를 주입할 수 있음
+	객체 타입은 ref로 세터를 주입할 수 있음
+-->
+<bean class="경로.클래스파일명(확장자 생략)" id="아이디값">
+	<property name="필드명" value="변수값"></property>
+	<property name="필드명" ref="변수값"></property>
+</bean>
+```
+
+```xml
+<!--
+	xmlns:p="http://www.springframework.org/schema/p"를 추가하면 p:필드명 속성을 이용해 세터를 주입할 수 있음
+-->
+xmlns:p="http://www.springframework.org/schema/p"
+
+<bean class="경로.클래스파일명(확장자 생략)" id="아이디값" p:필드명="변수값"/>
+```
+
+### 예시 코드: collection 주입
 
 ```xml
 <!--
@@ -137,7 +162,55 @@ bean.메소드명(); // 클래스의 메소드 호출
 	객체 타입은 ref로 세터에 변수를 입력할 수 있음
 -->
 <bean class="경로.클래스파일명(확장자 생략)" id="아이디값">
-	<property name="변수명" value="변수값"></property>
-	<property name="변수명" ref="변수값"></property>
+	<property name="필드명" ref="변수값"></property>
 </bean>
+```
+
+### 예시 코드: 외부 properties 파일에서 값 가져오기
+
+```xml
+
+<!-- 외부 ~.properties 파일 위치를 설정하는 클래스 선언 -->
+<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+	<property name="location">
+		<value>classpath:경로/~.properties</value>
+	</property>
+</bean>
+
+<!-- 두 개 이상의 properties 파일을 가져올 때 -->
+<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+	<property name="locations">
+		<array>
+			<value>classpath:경로/~.properties</value>
+			<value>classpath:경로/~.properties</value>
+		</array>
+	</property>
+</bean>
+
+<!-- ${key값}으로 외부 ~.properties 파일에 저장한 value값 호출 -->
+<bean class="경로.클래스파일명(확장자 생략)" id="아이디값">
+	<property name="필드명" value="${key값}"/>
+</bean>
+```
+
+```xml
+
+<!--
+	xmlns:context="http://www.springframework.org/schema/context"를 추가하면
+	위의 PropertySourcesPlaceholderConfigurer를 자동 등록하는 설정을 사용할 수 있음
+-->
+xmlns:context="http://www.springframework.org/schema/context"
+
+<context:property-placeholder location="classpath:경로/~.properties, classpath:경로/~.properties..."/>
+```
+
+### 예시 코드: 외부 xml 파일에서 값 가져오기
+
+```xml
+<!--
+	외부 ~.xml 문서 import하기
+	임포트 한 뒤에는 현재 xml 파일에 존재하는 것처럼 호출하면 호출됨
+-->
+<import resource="classpath:경로/~.xml"/>
+
 ```
