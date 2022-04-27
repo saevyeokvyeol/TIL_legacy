@@ -214,3 +214,110 @@ xmlns:context="http://www.springframework.org/schema/context"
 <import resource="classpath:경로/~.xml"/>
 
 ```
+
+### 예시 코드: autowire
+
+```xml
+<!--
+	세터나 생성자에 주입시킬 객체를 자동으로 찾아내 xml 태그를 간소화시키는 것
+	
+	byType: 타입이 같은 객체를 자동으로 찾아 setter를 주입
+	        없으면 생략, 동일한 타입이 2개 이상 있을 때에는 오류 발생
+	byName: xml id와 java property 이름이 동일한 객체를 찾아 setter를 주입
+	        이름이 달라도 오류가 나지는 않지만 주입되지 않음
+	constructor: 생성자 파라미터를 주입함
+	             먼저 byType으로 객체를 찾고, 동일한 타입이 2개 이상일 경우 byName으로 찾음
+	             여기서 byName의 경우 xml의 id와 생성자의 parameter 이름과 동일해야 함
+	             이름이 다르면 생성자 주입X
+-->
+<bean class="경로.클래스파일명(확장자 생략)" id="아이디값" autowire="default | byType | byName | constructor"/>
+
+```
+
+### 예시 코드: 주입 어노테이션 @Autowired, @Resource, @Value, @Qualifier
+
+```xml
+<!--
+	주입시킬 객체를 자동으로 찾아내는 어노테이션
+	
+	@Autowired: spring에서 제공하는 어노테이션
+	            프로퍼티, 세터, 생성자, 일반 메소드에 적용 가능하며 타입으로 주입한 뒤 불가능하면 이름으로 주입함
+	@Qualifier: 동일한 타입이 여러 개 있을 경우 특정 Bean을 찾음
+	            @Autowired와 함께 사용
+-->
+
+<!-- @Autowired를 자바에서 사용하기 위해 bean 등록 -->
+<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor"/>
+or
+<context:annotation-config/>
+
+<!-- 자바 파일 필드 선언부 윗줄에 @Autowired 작성(Autowired를 사용할 모든 필드마다 작성) -->
+@Autowired
+@Qualifier("value값") <!-- xml 파일에서 생성한 id와 필드명이 다를 때 호출해올 값을 알려주기 위해 사용 -->
+private 필드타입 필드명;
+```
+
+```xml
+<!--
+	@Resource: javax에서 제공하는 어노테이션
+	           프로퍼티와 세터에 적용 가능하며 이름으로 주입함
+-->
+
+<!-- @Resource를 자바에서 사용하기 위해 pom.xml에 dependency 추가 -->
+<!-- https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api -->
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+</dependency>
+
+<!-- 자바 파일 필드 선언부 윗줄에 @Resource 작성(Resource를 사용할 모든 필드마다 작성) -->
+@Resource(name = "name값")
+```
+
+```xml
+<!--
+	@Value: 객체의 primitive와 String 타입을 초기화시키는 어노테이션
+-->
+
+<!-- 자바 파일 필드 선언부 윗줄에 @Value작성(초기화해줄 모든 필드 위에 작성) -->
+@Resource(name = "name값")
+```
+
+### 예시 코드: 생성 어노테이션 @Component, @Repository, @Service, @Controller
+
+```xml
+<!--
+	Bean을 등록하는 어노테이션
+	
+	@Component: 컴포넌트를 나타내는 일반적인 스테레오 타입, <Bean> 태그와 동일한 역할
+	@Repository: 퍼시스턴스 레이어, 영속성을 가지는 속성(파일, 데이터베이스)를 가진 클래스에 사용
+	@Service: 서비스 레이어, 비즈니스 로직을 가진 클래스에 사용
+	@Controller: 프레젠테이션 레이어, 웹 어플리케이션 웹 요청과 응답을 처리하는 클래스에 사용
+
+	@Repository, @Service, @Controller는 @Component를 구체화한 형태
+	기본적으로 객체를 singleton으로 관리하기 때문에 두 번 입력해 객체 두 개를 생성하는 건 불가능
+	@Scope 어노테이션으로 설정을 바꿀 수 있음
+-->
+
+<!--
+	클래스를 스캔해 Bean으로 등록하기 위한 태그
+	<context:annotation-config/> 기능을 포괄함
+-->
+<context:component-scan base-package="패키지 경로"/>
+
+<!-- 클래스 선언부 위에서 어노테이션 입력 -->
+@Autowired
+@Qualifier("value값") <!-- xml 파일에서 생성한 id와 필드명이 다를 때 호출해올 값을 알려주기 위해 사용 -->
+private 필드타입 필드명;
+```
+
+```java
+/*
+* 클래스 선언부 위에서 어노테이션 입력
+* */ 
+
+@Component | @Repository | @Service | @Controller("id값")
+// 괄호를 생략하면 id는 클래스명 첫글자를 소문자로 바꿔서 등록됨
+public class 클래스명{}
+```
