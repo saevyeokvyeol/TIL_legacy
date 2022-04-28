@@ -321,3 +321,82 @@ private 필드타입 필드명;
 // 괄호를 생략하면 id는 클래스명 첫글자를 소문자로 바꿔서 등록됨
 public class 클래스명{}
 ```
+
+## AOP
+
+![AOP01.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5d32a646-c0ae-4f25-9021-3d57d37bd0eb/AOP01.png)
+
+![AOP02.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a854debb-66e9-493a-aa98-145d07a7be2b/AOP02.png)
+
+### Aspect Oriented Programming
+
+- 관점 지향 프로그래밍
+- 프로그램의 기능 중 핵심 기능과 중복되는 공통 기능을 완전히 분리한 뒤 공통 기능을 따로 제작해 재사용하는 것
+- ex) 보안, 트랜잭션, 로그, 세션 유무 처리, 한글 인코딩 처리 등
+
+### 용어 정리
+
+- Advice: Spring에서 AOP에 의한 공통 기능을 부르는 용어, Joinpoint에 삽입되어 동작할 수 있는 코드
+- target: Advice를 적용해야 하는 각각의 클래스, 핵심 기능을 구현한 클래스
+- JoinPoint : 어플리케이션을 실행할 때 특정 작업이 시작되는 시점, 특정 메소드가 시작되는 지점, Advice를 삽입하는 지점
+- Pointcut: 여러 개의 Joinpoint를 하나로 묶은 것, 정규식 표현식을 사용해 묶음
+- Advisor: Pointcut + Advice = Advisor
+- Aspect: 하나의 advice가 타겟 대상에 적용되는 전체 과정(advice 하나 당 하나의 Aspect)
+- AOP Proxy Server: joinpoint에 advice를 삽입해주는 도구
+- Weaving: AOP Proxy Server에서 joinpoint에 advice를 삽입해주는 것
+
+### Advice
+
+- Spring에서 AOP에 의한 공통기능을 부르는 용어
+- 직접 호출 ❌ AOP Proxy Server에서 자동으로 joinpoint가 호출되기 전이나 후에 advice를 삽입해줌(=Weaving)
+- around: 사전, 사후 처리를 모두 하는 advice
+- before: 사전 처리만 하는 advice
+- after: 예외 발생 여부와 관계없이 무조건 사후 처리 하는 advice
+- after-returning: 정상 동작 시에만 사후 처리하는 advice
+- after-throwing: 예외가 발생했을 때만 사후 처리하는 advice
+
+### AOP Proxy Server
+
+- joinpoint에 advice를 삽입해주는 도구
+- 생성 방법
+    - J2SE: 디폴트 방식. 자바 기본 문법을 사용. 인터페이스가 있을 경우 인터페이스에서 작업해야 함
+    - CGLIB: 사전 처리만 하는 advice
+- 적용 방법
+    - xml 기반 설정:
+    - JavaBase설정(=Annotation)
+
+### JoinPoint
+
+- 어플리케이션을 실행할 때 특정 작업이 시작되는 시점, 특정 메소드가 시작되는 지점, Advice를 삽입하는 지점
+
+### 예제코드: Around 방식 Advice
+
+```xml
+<!--
+	AOP를 위한 추가 dependency
+	모든 Advise는 pom.xml에 해당 dependency를 추가해야 사용 가능함
+-->
+<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+<dependency>
+  	<groupId>org.aspectj</groupId>
+  	<artifactId>aspectjweaver</artifactId>
+  	<version>1.9.6</version>
+  	<scope>compile</scope><!-- 디폴트값은 runtime, compile로 바꿔줘야 임포트 가능 -->
+</dependency>
+```
+
+```java
+/**
+* Around 방식 Advice 기본 패턴
+* */
+public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+	// 사전 처리
+	
+	// 실제 타겟 대상을 호출
+	Object obj = joinPoint.proceed();
+	
+	// 사후 처리
+	
+	return obj;
+}
+```
