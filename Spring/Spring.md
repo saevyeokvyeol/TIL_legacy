@@ -322,11 +322,9 @@ private 필드타입 필드명;
 public class 클래스명{}
 ```
 
+# Spring
+
 ## AOP
-
-![AOP01.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5d32a646-c0ae-4f25-9021-3d57d37bd0eb/AOP01.png)
-
-![AOP02.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a854debb-66e9-493a-aa98-145d07a7be2b/AOP02.png)
 
 ### Aspect Oriented Programming
 
@@ -336,7 +334,7 @@ public class 클래스명{}
 
 ### 용어 정리
 
-- Advice: Spring에서 AOP에 의한 공통 기능을 부르는 용어, Joinpoint에 삽입되어 동작할 수 있는 코드
+- Advice: Spring에서 AOP에 의한 공통 기능(=공통 관심 사항)을 부르는 용어, Joinpoint에 삽입되어 동작할 수 있는 코드
 - target: Advice를 적용해야 하는 각각의 클래스, 핵심 기능을 구현한 클래스
 - JoinPoint : 어플리케이션을 실행할 때 특정 작업이 시작되는 시점, 특정 메소드가 시작되는 지점, Advice를 삽입하는 지점
 - Pointcut: 여러 개의 Joinpoint를 하나로 묶은 것, 정규식 표현식을 사용해 묶음
@@ -347,7 +345,7 @@ public class 클래스명{}
 
 ### Advice
 
-- Spring에서 AOP에 의한 공통기능을 부르는 용어
+- Spring에서 AOP에 의한 공통 기능(=공통 관심 사항)을 부르는 용어
 - 직접 호출 ❌ AOP Proxy Server에서 자동으로 joinpoint가 호출되기 전이나 후에 advice를 삽입해줌(=Weaving)
 - around: 사전, 사후 처리를 모두 하는 advice
 - before: 사전 처리만 하는 advice
@@ -358,6 +356,7 @@ public class 클래스명{}
 ### AOP Proxy Server
 
 - joinpoint에 advice를 삽입해주는 도구
+- 물리적으로 존재하는 서버 ❌ 개념적으로 존재
 - 생성 방법
     - J2SE: 디폴트 방식. 자바 기본 문법을 사용. 인터페이스가 있을 경우 인터페이스에서 작업해야 함
     - CGLIB: 사전 처리만 하는 advice
