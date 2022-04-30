@@ -617,7 +617,7 @@ public class 클래스명 extends HttpServlet { }
 <!-- 생성한 서블릿을 url에서 호출 -->
 <servlet-mapping>
 	<servlet-name>서블릿 개체명</servlet-name>
-  <url-pattern>url 주소 설정(루트 기준)</url-pattern>
+  <url-pattern>url 주소 설정(루트 기준 or *.확장자)</url-pattern>
 	<!-- 여기서 설정한 url 주소를 호출하면 서블릿 개체가 출력됨 -->
 </servlet-mapping>
 ```
@@ -627,7 +627,7 @@ public class 클래스명 extends HttpServlet { }
 ```java
 import javax.servlet.annotation.WebServlet;
 
-@WebServlet (loadOnStartup = 1, urlPatterns = "url 주소 설정(루트 기준)")
+@WebServlet (loadOnStartup = 1, urlPatterns = "url 주소 설정(루트 기준 or *.확장자)")
 public class 클래스명 extends HttpServlet { }
 ```
 

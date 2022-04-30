@@ -399,3 +399,227 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 	return obj;
 }
 ```
+
+## SpringMVC
+
+### DispatcherServlet
+
+- Spring MVC Framework의 Front Controller, 웹 요청-응답 Life Cycle을 주관
+- DispatcherServlet을 직접 제작하지 않고 springframework에서 제공하는 servlet 파일을 등록하면 설정 완료
+    - 기존 방식
+        1. HttpServlet을 상속받아 DispatcherServlet 파일 생성
+            1. HandlerMapping을 통해 key값에 대응되는 controller를 받음
+            2. controller에서 메소드를 호출해 ModelAndView를 리턴받음
+            3. 리턴받은 ModelAndView 값에 따라 이동시킴
+        2. 제작한 DispatcherServlet 파일을 wep.xml 문서에 등록함
+    - Spring 사용 시
+        1. springframework에서 제공하는 DispatcherServlet을 wep.xml 문서에 등록함
+        2. dispatcher-servlet.xml 파일을 제작함(DispatcherServlet 등록 시 자동 탐색 및 실행)
+            1. handlerMapping 등록
+            2. viewResolver 등록
+            3. ~Controller 등록
+        
+        ```xml
+        <!-- web.xml -->
+        <servlet>
+        	<servlet-name>dispatcher</servlet-name>
+        	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        	<load-on-startup>1</load-on-startup>
+        
+        	<!--
+        		기본으로 설정된 경로/파일명 대신 다른 경로/파일명을 사용하고 싶을 때 init-param 등록\
+        		기본 경로/파일명: /WEB-INF/(servlet-name)-servlet.xml
+        	-->
+        	<init-param>
+        		<param-name>contextConfigLocation</param-name>
+        		<param-value>경로/파일명.xml</param-value>
+        	</init-param>
+        
+        </servlet>
+        
+        <servlet-mapping>
+        	<servlet-name>dispatcher</servlet-name>
+        	<url-pattern>url 주소 설정(루트 기준 or *.확장자)</url-pattern>
+        </servlet-mapping>
+        ```
+        
+        ```xml
+        <!--
+        	dispatcher-servlet.xml
+        	springContainer 개념인 QebApplicationContext 역할로 spring 내부의 모든 객체의 생성과 소멸을 관리
+        -->
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+        	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+        
+        	<!-- HandlerMapping 등록 -->
+        	<bean id="handlerMapping" class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/>
+        	
+        	<!-- viewResolver 등록-->
+        	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        		<property name="prefix" value="이동할 경로"/>
+        		<property name="suffix" value="호출할 파일 확장자"/>
+        	</bean>
+        	
+        	<!-- Controller 등록 -->
+        	<bean name="/메소드 호출 후 이동시킬 경로" class="경로.~Controller"/>
+        </beans>
+        ```
+        
+
+### HandlerMapping
+
+- 웹 요청 시 해당 URL을 어떤 Controller가 처리할 지 결정
+- HandlerMappingListener를 직접 제작하지 않고 springframework에서 제공하는 HandlerMapping을 등록하면 설정 완료
+    - 기존 방식
+        1. HandlerMapping 파일 제작
+            1. key값을 받아 대응하는 controller를 넘겨줌
+        2. DispatcherServlet에서 호출해 사용
+    - Spring 사용 시
+        1. springframework에서 지원하는 BeanNameUrlHandlerMapping을 dispatcher-servlet.xml 파일에 등록함
+        
+        ```xml
+        <!-- HandlerMapping 등록 -->
+        <bean id="handlerMapping" class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/>
+        ```
+        
+
+### Controller
+
+- 비즈니스 로직을 수행하고 결과 데이터를 ModelAndView에 반영
+- Controller 인터페이스를 직접 제작하지 않고 springframework에서 제공하는 Controller를 구현해 제작
+    - 기존 방식
+        1. Controller 인터페이스 제작
+        2. 제작한 Controller 인터페이스를 구현해 세부 Controller 제작
+    - Spring 사용 시
+        1. springframework에서 제공하는 Controller를 구현해 세부 Controller 제작
+        
+        ```java
+        import org.springframework.web.servlet.mvc.Controller;
+        
+        public class DeleteController implements Controller {
+        	@Override
+        	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        		ModelAndView mv = new ModelAndView();
+        		return mv;
+        	}
+        }
+        ```
+        
+
+### ModelAndView
+
+- Controller가 수행 결과를 반영하는 Model 데이터 객체와 이동할 페이지 정보(또는 View 객체)를 담은 객체
+- ModelAndView 파일을 직접 제작하지 않고 springframework에서 제공하는 ModelAndView를 임포트해 사용
+    - 기존 방식
+        1. ModelAndView 클래스 제작
+        2. 제작한 ModelAndView를 임포트해 Controller에서 리턴값으로 사용
+    - Spring 사용 시
+        1. springframework에서 제공하는 ModelAndView를 임포트해 Controller에서 리턴값으로 사용
+        
+        ```java
+        import org.springframework.web.servlet.ModelAndView;
+        
+        public class DeleteController implements Controller {
+        	@Override
+        	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        		ModelAndView mv = new ModelAndView();
+        		return mv;
+        	}
+        }
+        ```
+        
+
+### View
+
+- 결과 데이터인 Model 객체를 display
+- ModelAndView 파일을 직접 제작하지 않고 springframework에서 제공하는 ModelAndView를 임포트해 사용
+    - 기존 방식
+        1. ModelAndView 클래스 제작
+        2. 제작한 ModelAndView를 임포트해 Controller에서 리턴값으로 사용
+    - Spring 사용 시
+        1. springframework에서 제공하는 ModelAndView를 임포트해 Controller에서 리턴값으로 사용
+        
+        ```java
+        import org.springframework.web.servlet.ModelAndView;
+        
+        public class DeleteController implements Controller {
+        	@Override
+        	public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        		ModelAndView mv = new ModelAndView();
+        		return mv;
+        	}
+        }
+        ```
+        
+## Maven 기반 SpringMVC
+
+### 디렉토리 구조
+
+- 루트
+    - src/main/java  → controller, service, dao, dto 등 java 파일
+    - src/main/resources  → mapper, config 등 설정 관련 xml, properties 파일
+    - src/main/test  → 단위 테스트용 폴더
+- webapp
+    - src/main/webapp/  → root (= WebContent)
+    - src/main/webapp/resources  → css, js, img 등 정적 문서
+- WEB-INF
+    - src/main/webapp/WEB-INF/  → web.xml
+    - src/main/webapp/WEB-INF/spring  → root-context.xml, spring-context.xml 등 springContainer 설정 문서
+    - src/main/webapp/WEB-INF/views  → ~.jsp문서
+		
+### Controller: 예제 코드
+
+```java
+@Controller
+@RequestMapping("경로") // 특정 경로로 진입하는 url을 가져오기 위해 사용(메소드의 요청 경로를 해당 경로 아래에서 찾음)
+public class ~Controller {
+
+	@RequestMapping("요청 경로") // 작성한 경로를 요청할 경우 해당 메소드를 호출함
+	public ModelAndView aa(HttpServletRequest request, HttpServletResponse response) { // 매개 변수가 필요할 경우 입력하면 Spring이 자동으로 호출 시 넣어줌
+		return new ModelAndView;
+		// 리턴 ModelAndView의 경우 = ModelAndView().getViewName() = viewName = prefix + ModelAndView().getViewName() + suffix
+	}
+
+	@RequestMapping(value = {"요청 경로", "요청 경로"}) // 여러 개의 요청이 하나의 메소드를 실행할 때
+	public String bb() {
+		return "str";
+		// 리턴 String의 경우: 리턴값 = viewName = prefix + 리턴값 + suffix
+	}
+
+	@RequestMapping(value = "요청 경로", method = RequestMethod.GET | POST) // 특정 요청 방식만 받고 싶을 때
+	@GetMapping("요청 경로") // get 방식만 받고 싶을 때(4.3 버전 이상부터 사용 가능한 축약형)
+	@PostMapping("요청 경로") // @RequestMapping과 함께 사용X
+	public void cc() {
+	}
+	// 리턴 void의 경우: 요청된 주소 = viewName = prefix + 요청된 주소(확장자 생략) + suffix
+
+	@RequestMapping(value = "요청 경로", params = {"key값"}) // 특정 파라미터를 받을 때에만 메소드를 실행함
+	// "key값 == ??" | "key값 != ??" 처럼 key값을 비교할 수 있음
+	public void cc() {
+	}
+	// 리턴 void의 경우: 요청된 주소 = viewName = prefix + 요청된 주소(확장자 생략) + suffix
+}
+```
+
+### 한글 인코딩: 예제 코드
+
+```xml
+<!--
+	Spring에서 인코딩 필터 처리를 제공한 것을 web.xml에 입력하면 한글 인코딩 처리 완료
+-->
+<filter>
+	<filter-name>charaterEncoding</filter-name>
+	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	<init-param>
+		<param-name>encoding</param-name>
+		<param-value>UTF-8</param-value>
+	</init-param>
+</filter>
+
+<filter-mapping>
+	<filter-name>charaterEncoding</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+```
