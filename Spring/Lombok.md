@@ -1,8 +1,6 @@
-# Lombok
+> @Setter, @Getter 등의 어노테이션을 지원해 개발을 빠르게 만들어주는 라이브러리
 
-- @Setter, @Getter 등의 어노테이션을 지원해 개발을 빠르게 만들어주는 라이브러리
-
-## 예제코드 @Setter, @Getter
+# 예제코드 @Setter, @Getter
 
 ```xml
 <!--
