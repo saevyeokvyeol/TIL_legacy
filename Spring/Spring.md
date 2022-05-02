@@ -478,6 +478,7 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     	<init-param>
     		<param-name>contextConfigLocation</param-name>
     		<param-value>경로/파일명.xml</param-value>
+				<!-- 두 개 이상의 xml 파일을 연결하고 싶을 때에는 콤마나 줄바꿈으로 연결 -->
     	</init-param>
     
     </servlet>
@@ -649,7 +650,7 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     	 * List<객체> 형태로 인수 받는 건 불가능
     	 * */
     
-    	@ModelAttribute("key값")
+    	@RequestMapping("key값")
     	public 리턴타입 method() {
     		return value값;
     	} /*
