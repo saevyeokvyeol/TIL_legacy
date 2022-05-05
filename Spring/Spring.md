@@ -419,6 +419,13 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     
     ```xml
     <!-- web.xml -->
+    
+    <!--
+    	서블릿 등록
+    	두 개 이상의 서블릿을 등록하는 것도 가능함
+    	두 개 이상의 서블릿이 등록된 경우 서로의 HandlerMapping, Controller, viewResolver 공유X
+    	각자에게 등록된 HandlerMapping, Controller, viewResolver만 사용 가능함
+    -->
     <servlet>
     	<servlet-name>dispatcher</servlet-name>
     	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -429,14 +436,15 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     		기본 경로/파일명: /WEB-INF/(servlet-name)-servlet.xml
     	-->
     	<init-param>
-    		<param-name>contextConfigLocation</param-name>
+    		<param-name>appServlet</param-name>
     		<param-value>경로/파일명.xml</param-value>
+    		<!-- 두 개 이상의 xml 파일을 연결하고 싶을 때에는 콤마나 줄바꿈으로 연결 -->
     	</init-param>
     
     </servlet>
     
     <servlet-mapping>
-    	<servlet-name>dispatcher</servlet-name>
+    	<servlet-name>appServlet</servlet-name>
     	<url-pattern>url 주소 설정(루트 기준 or *.확장자)</url-pattern>
     </servlet-mapping>
     ```
@@ -454,11 +462,11 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
     	<property name="prefix" value="이동할 경로"/>
     	<property name="suffix" value="호출할 파일 확장자"/>
-			<property name="order" value="n"/>
-			<!--
-				viewResolver가 여러 개 있을 경우 우선 순위를 설정하기 위해 사용
-				숫자가 낮을 수록 우선순위가 높음
-			-->
+    	<property name="order" value="n"/>
+    	<!--
+    		viewResolver가 여러 개 있을 경우 우선 순위를 설정하기 위해 사용
+    		숫자가 낮을 수록 우선순위가 높음
+    	-->
     </bean>
     
     <!-- Controller 등록 -->
@@ -467,10 +475,26 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     
 - Spring 사용 시(Annotation 방식)
     1. springframework에서 제공하는 DispatcherServlet을 wep.xml 문서에 등록함
-    2. dispatcher-servlet.xml 파일을 제작(DispatcherServlet 등록 시 자동 탐색 및 실행, maven 사용 시 자동 제작 및 탐색)
+    2. servlet-context.xml(=dispatcher-servlet.xml) 파일을 제작(DispatcherServlet 등록 시 자동 탐색 및 실행, maven 사용 시 자동 제작 및 탐색)
     
     ```xml
     <!-- web.xml -->
+    
+    <!--
+    	ContextLoaderListener 등록
+    	기본 경로/파일명: /WEB-INF/applicationContext.xml
+    	Maven 프로젝트에서는 /WEB-INF/spring/root-context.xml로 자동 설정
+    -->
+    <listener>
+    	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    <!--
+    	서블릿 등록
+    	두 개 이상의 서블릿을 등록하는 것도 가능함
+    	두 개 이상의 서블릿이 등록된 경우 서로의 HandlerMapping, Controller, viewResolver 공유X
+    	각자에게 등록된 HandlerMapping, Controller, viewResolver만 사용 가능함
+    -->
     <servlet>
     	<servlet-name>dispatcher</servlet-name>
     	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -481,22 +505,22 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     		기본 경로/파일명: /WEB-INF/(servlet-name)-servlet.xml
     	-->
     	<init-param>
-    		<param-name>contextConfigLocation</param-name>
+    		<param-name>appServlet</param-name>
     		<param-value>경로/파일명.xml</param-value>
-				<!-- 두 개 이상의 xml 파일을 연결하고 싶을 때에는 콤마나 줄바꿈으로 연결 -->
+    		<!-- 두 개 이상의 xml 파일을 연결하고 싶을 때에는 콤마나 줄바꿈으로 연결 -->
     	</init-param>
     
     </servlet>
     
     <servlet-mapping>
-    	<servlet-name>dispatcher</servlet-name>
+    	<servlet-name>appServlet</servlet-name>
     	<url-pattern>url 주소 설정(루트 기준 or *.확장자)</url-pattern>
     </servlet-mapping>
     ```
     
     ```xml
     <!--
-    	dispatcher-servlet.xml
+    	servlet-context.xml(=dispatcher-servlet.xml)
     	springContainer 개념인 WebApplicationContext 역할로 spring 내부의 모든 객체의 생성과 소멸을 관리
     -->
     
@@ -507,18 +531,21 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
     	<property name="prefix" value="이동할 경로"/>
     	<property name="suffix" value="호출할 파일 확장자"/>
-			<property name="order" value="n"/>
-			<!--
-				viewResolver가 여러 개 있을 경우 우선 순위를 설정하기 위해 사용
-				숫자가 낮을 수록 우선순위가 높음
-			-->
     </bean>
     
     <!-- Controller 등록 -->
     <annotation-driven/>
-    <context:component-scan base-package="yuda.mvc.controller"/>
+    <context:component-scan base-package="패키지"/>
     ```
     
+    ```xml
+    <!--
+    	root-context.xml(=applicationContext.xml)
+    	모든 서블릿과 필터에서 공유할 영역을 등록함
+    -->
+    
+    <context:component-scan base-package="패키지"/>
+    ```
 
 ## HandlerMapping
 
