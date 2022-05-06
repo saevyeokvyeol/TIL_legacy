@@ -84,15 +84,9 @@
 	-->
 	<properties resource="properties 파일 경로"/>
 	
+	<!-- 옵션 세팅 설정 -->
 	<settings>
-		<!--
-			#{ename}에 값이 없을 때 null값으로 들어가도록 설정 변경
-			value의 null은 무조건 대문자()
-		-->
-		<setting name="jdbcTypeForNull" value="NULL"/>
-
-		<!-- 자바의 camel 표기법과 db의 snake 표기법을 매핑해주는 설정 -->
-		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		<setting name="setting명" value="setting값"/>
 	</settings>
 	
 	<!-- 객체 별칭 만들기 -->
@@ -301,7 +295,6 @@ public void select() {
 ## INSERT
 
 ```xml
-
 <!--
 	기본 insert sql문
 	id: DAO에서 매퍼의 namespace과 <insert> 태그의 id값으로 SQL문을 호출할 때 사용
@@ -338,7 +331,6 @@ public void insert() {
 ## UPDATE
 
 ```xml
-
 <!--
 	기본 update sql문
 	id: DAO에서 매퍼의 namespace과 <update> 태그의 id값으로 SQL문을 호출할 때 사용
@@ -375,7 +367,6 @@ public void update() {
 ## DELETE
 
 ```xml
-
 <!--
 	기본 delete sql문
 	id: DAO에서 매퍼의 namespace과 <delete> 태그의 id값으로 SQL문을 호출할 때 사용
@@ -409,7 +400,9 @@ public void delete() {
 }
 ```
 
-## 참고: include
+# 예제 코드: 참고 문법
+
+## include
 
 > 자주 사용되는 문장의 경우 미리 선언한 뒤 include를 이용해 참조함
 > 
@@ -430,7 +423,7 @@ public void delete() {
 </select>
 ```
 
-## 참고: SQL문에 파라미터 입력
+## SQL문에 파라미터 입력
 
 ### 파라미터: 기본 타입
 
@@ -460,12 +453,13 @@ public void delete() {
 </select>
 ```
 
-- 파라미터로 받을 객체에 별칭 주기
+- 참고: 파라미터로 받을 객체에 별칭 주기
     
     ```xml
     <!--
-    	파라미터가 객체의 경로와 이름이 복잡한 경우 SqlMapConfig.xml 문서에서 별칭을 부여할 수 있음
+    	파라미터로 받을 객체 경로가 복잡한 경우 SqlMapConfig.xml 문서에서 별칭을 부여할 수 있음
     	객체 별칭을 만들면 parameterType에 별칭 입력 가능
+    	객체 별칭은 관례적으로 첫 글자를 소문자로 바꾼 객체명을 사용
     -->
     
     <!-- SqlMapConfig.xml -->
@@ -496,7 +490,7 @@ public void delete() {
 </select>
 ```
 
-## 참고: 컬럼명으로 파라미터 입력
+## 컬럼명으로 파라미터 입력
 
 ```xml
 <!--
@@ -511,14 +505,22 @@ public void delete() {
 </select>
 ```
 
-## 참고: DB 컬럼명과 DTO 필드명이 서로 다를 경우
+## 파라미터를 넣지 않을 경우
+
+> sql문에 파라미터를 지정했지만 DAO에서 파라미터를 입력하지 않는 경우 오류 발생X
+> 
+- 일반 select, insert, update, delete문에서는 결과값이 나오지 않음
+- 동적 SQL 안에서만 파라미터를 사용할 경우 동적 SQL이 실행되지 않은 결과값이 출력됨
+
+## DB 컬럼명과 DTO 필드명이 서로 다를 경우
+
+> select 결과를 객체로 받을 경우 컬럼명-필드명으로 자동 매핑하기 때문에 컬럼명-필드명이 다를 경우 오류 발생
+> 
+
+### 컬럼명에 별칭 부여
 
 ```java
-/*
- * select문 결과를 객체로 받을 경우 컬럼명-필드명을 인식해 자동 매핑함
- * 때문에 DB 컬럼명과 DTO 필드명이 서로 다를 경우 오류 발생
- * 해당 오류를 방지하기 위해 컬럼명에 별칭 부여
- * */
+/* 컬럼명에 별칭을 부여해 DB 컬럼명과 DTO 필드명을 맞춰줌 */
 
 // DTO
 public class EmpDTO {
@@ -533,7 +535,24 @@ public class EmpDTO {
 </select>
 ```
 
-## 참고: RowBounds
+### 언더스코어 표기법과 낙타 표기법 매핑 설정
+
+```xml
+<!--
+	DB의 언더스코어 표기법(underscore case = snake case)과 java의 낙타 표기법(camel case)을 자동 매핑하도록 설정
+-->
+
+<!--
+	SqlMapConfig.xml
+	<settings> 태그는 <properties> 태그와 <typeAliases> 태그 사이에 입력
+-->
+<settings>
+		<!-- mapUnderscoreToCamelCase을 true로 설정 -->
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+```
+
+## RowBounds
 
 > RowBounds 객체를 이용해 결과를 제한해 가져올 수 있음
 > 
@@ -544,7 +563,6 @@ public void select() {
 	try {
 		session = DbUtil.getSession();
 
-		
 		List<결과타입> list = session.selectList("mapper namespace값.select문 id값", null, new RowBounds(i, j));
 		/**
 		 * RowBounds: 결과값으로 나온 레코드 중 일부분만 제한해 가져올 때 사용
@@ -558,4 +576,186 @@ public void select() {
 		DbUtil.sessionClose(session);
 	}
 }
+```
+
+## null값 입력
+
+> insert, update 시 레코드 컬럼에 null값 입력
+> 
+
+```xml
+<!--
+	파라미터가 null일 경우 insert, update 시 필드에 null값을 넣도록 설정
+	해당 설정이 없을 때 파라미터가 null일 경우 오류 발생
+-->
+
+<!--
+	SqlMapConfig.xml
+	<settings> 태그는 <properties> 태그와 <typeAliases> 태그 사이에 입력
+-->
+<settings>
+		<!--
+			파라미터에 값이 null일 때 필드에 null값으로 들어가도록 설정 변경
+			value의 null은 무조건 대문자(대소문자를 가림)
+		-->
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+```
+
+# 예제 코드: 동적 SQL
+
+## where
+
+```xml
+<!--
+	where
+	: select, insert, update, delete 태그 안에 사용함
+	  where 태그 안에 문장이 있을 경우 태그 안 문장 맨 앞에 where를 추가해주고
+		태그 안 문장이 and나 or로 시작한다면 and나 or를 제거함
+-->
+<where>
+	실행문
+</where>
+```
+
+## trim
+
+```xml
+<!--
+	trim
+	: where의 상위 버전 태그
+	  trim 태그 안에 문장이 있을 경우 설정한 값에 따라 태그 안 문장 앞뒤에 문자를 삽입하거나 지워줌
+		
+		prefix - 태그 안에 문장이 있으면 가장 앞에 해당 문자를 붙여줌
+		prefixOverrides - 태그 안 문장 중 가장 앞에 해당 문자가 있으면 자동 삭제
+		suffix - 태그 안에 문장이 있으면 가장 뒤에 해당 문자 붙여줌
+		suffixOverrides - 태그 안 문장 중 가장 뒤에 해당 문자가 있으면 자동 삭제
+
+		~Overrides 속성의 경우 |(or)로 삭제할 문자 조건을 여러 개 지정하는 것도 가능
+-->
+<trim prefix="가장 앞에 추가할 문자" prefixOverrides="가장 앞에서 삭제할 문자"
+	suffix="가장 뒤에 추가할 문자" suffixOverrides="가장 뒤에서 삭제할 문자">
+	실행문
+</trim>
+```
+
+## where
+
+```xml
+<!--
+	set
+	: update 태그 안에 사용함
+	  set 태그 안에 문장이 있을 경우 태그 안 문장 맨 앞에 set를 추가해주고
+	  태그 안 문장 앞이나 뒤에 붙은 필요없는 ,(콤마)를 제거함
+-->
+<set>
+	실행문
+</set>
+```
+
+## if
+
+```xml
+<!--
+	if
+	: select, insert, update, delete 태그 안에 사용하며 조건에 부합할 경우 태그 안에 입력한 문장을 출력함
+	  조건문 안에서 파라미터를 사용할 경우 #{}, ${}로 감싸지 않음
+-->
+
+<if test="조건문">
+	실행문
+</if>
+```
+
+## choose
+
+```xml
+<!--
+	choose
+	: if의 상위 버전 태그
+	  java의 if, else-if, else와 비슷함
+		여러 조건 중 처음으로 부합하는 태그 안에 입력한 문장만 출력함
+	  조건문 안에서 파라미터를 사용할 경우 #{}, ${}로 감싸지 않음
+-->
+<choose>
+	<when test="조건문1">
+		실행문1
+	</when>
+	<when test="조건문2">
+		실행문2
+	</when>
+	<otherwise>
+		실행문3
+	</otherwise>
+</choose>
+```
+
+## foreach
+
+```xml
+<!--
+	foreach
+	: select, insert, update, delete 태그 안에 사용함
+	  인수로 받은 자료구조에서 요소를 하나씩 꺼내 문장 안에서 출력함
+		separator, open, close 속성을 이용해 반복문 중간이나 가장 앞, 뒤에 추가할 문자를 지정할 수 있음
+-->
+<foreach collection="변수명(인수로 받은 자료구조)" item="item(자료구조에서 꺼낸 개별 요소)"
+	separator="각 반복문 중간에 추가할 문자" open="반복문 가장 앞에 추가할 문자" close="반복문 가장 뒤에 추가할 문자">
+	#{item}
+</foreach>
+```
+
+# 예제 코드: join
+
+## 1:1 관계 mapping join
+
+```xml
+<!--
+	1:1 관계 데이터 매핑용 Map
+	이 때 데이터 매핑용 Map != java의 Map
+-->
+<resultMap type="주 객체명(객체 별칭)" id="id값">
+	<!-- PK 컬럼 매핑: 일반 컬럼처럼 result 태그에 입력해도 상관없음 -->
+	<id column="DB 컬럼명" property="DTO 필드명"/>
+
+	<!-- 일반 컬럼 매핑 -->
+	<result column="DB 컬럼명" property="DTO 필드명"/>
+	
+	<!-- 객체 필드(1:1 관계) 매핑: association 태그 사용 -->
+	<association property="DB 테이블명" javaType="필드 객체명(객체 별칭)">
+		<!-- 컬럼 매핑 -->
+		<id column="DB 컬럼명" property="DTO 필드명"/>
+		<result column="DB 컬럼명" property="DTO 필드명""/>
+	</association>
+</resultMap>
+
+<select id="id값" resultMap="resultMap id값">
+	select join sql문
+</select>
+```
+
+## 1:다 관계 mapping join
+
+```xml
+<!--
+	1:다 관계 데이터 매핑용 Map
+-->
+<resultMap type="주 객체명(객체 별칭)" id="id값">
+	<!-- PK 컬럼 매핑: 일반 컬럼처럼 result 태그에 입력해도 상관없음 -->
+	<id column="DB 컬럼명" property="DTO 필드명"/>
+
+	<!-- 일반 컬럼 매핑 -->
+	<result column="DB 컬럼명" property="DTO 필드명"/>
+	
+	<!-- 객체 타입 리스트 필드(1:다 관계) 매핑: collection 태그 사용 -->
+	<collection property="DB 테이블명" ofType="리스트 제네릭 타입(=객체명 | 객체 별칭)">
+		<!-- 컬럼 매핑 -->
+		<id column="DB 컬럼명" property="DTO 필드명"/>
+		<result column="DB 컬럼명" property="DTO 필드명""/>
+	</collection>
+</resultMap>
+
+<select id="id값" resultMap="resultMap id값">
+	select join sql문
+</select>
 ```
