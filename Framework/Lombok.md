@@ -1,7 +1,7 @@
 > @Setter, @Getter 등의 어노테이션을 지원해 개발을 빠르게 만들어주는 라이브러리
 > 
 
-# 예제코드 @Setter, @Getter
+# 주요 어노테이션
 
 ```xml
 <!-- Lombok을 사용하기 위해 설치 후 pom.xml에 dependency 추가 -->
@@ -25,4 +25,48 @@
 @AllArgsConstructor // 모든 인수가 들어가는 생성자 생성
 @ToString // toString 메소드 오버라이딩
 public class 클래스명{}
+```
+
+# 주의: @ToString
+
+- 서로를 멤버 필드를 가진 클래스에 @ToString 어노테이션을 사용하면 스택오버플로우가 일어날 수 있음
+
+```java
+@ToString
+public class A {
+	B b;
+}
+
+@ToString
+public class B {
+	A a;
+}
+
+public static void main(String[] args) {
+	A a = new A();
+	System.out.println(A);
+	/*
+	 * 결과: A가 출력되며 A안에 있는 B가, B를 출력하며 B 안에 있는 A가 출력되며 스택오버플로우가 일어남
+	 * */
+}
+```
+
+```java
+@ToString(exclude = "b")
+public class A {
+	B b;
+}
+
+@ToString(exclude = "a") // a는 제외하고 toString 메소드 오버라이딩
+public class B {
+	A a;
+}
+
+public static void main(String[] args) {
+	A a = new A();
+	System.out.println(A);
+	/*
+	 * 결과: A가 출력될 때 A 안에 있는 B가 출력되지만 B가 출력될 때에는 A가 출력되지 않아 A와 B가 한 번씩 출력되고 종료
+	 * */
+}
 ```
