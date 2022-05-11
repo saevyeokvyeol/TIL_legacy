@@ -1281,3 +1281,276 @@ public List<String> ajax(서버에게 보낼 데이터 정보(parameter 정보))
 	return list;
 }
 ```
+
+# Spring Transaction
+
+> Spring에서 제공하는 Advice를 이용해 여러 작업을 하나로 묶어 결과에 따라 한 번에 commit, rollback(트랜잭션 처리) 할 수 있음
+> 
+
+## API 종류
+
+> Spring 트랜잭션 API는 같은 인터페이스(Platform Transaction Manager)를 구현한 구현체이기 때문에 다른 종류의 API로 바꿔도 정상 작동함
+> 
+- Java Transaction API(JTA): Jta Transaction Manager
+- Hibernate: Hibernate Transaction Manager
+- JDBC: DataSource Transaction Manager
+- Java Persistence API(JPA): Jpa Transaction Manager
+
+## 작동 원리
+
+1. advice가 적용된 target 메소드를 호출하면 AOP Proxy가 호출됨
+2. Transaction Advisor가 새로운 트랜잭션을 생성함
+3. Custom interceptor들이 Transaction Advisor 전 후로 호출되어 target 메소드를 실행함
+4. Transaction Advisor가 작업 결과에 따라 커밋, 롤백을 결정함
+5. AOP Proxy가 결과를 받아 호출자에게 넘김
+
+## 사용 설정
+
+- MyBatis-Spring 사용 설정을 기반으로 추가
+    
+    [https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#사용-설정](https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#%EC%82%AC%EC%9A%A9-%EC%84%A4%EC%A0%95)
+    
+
+```xml
+<!-- pom.xml -->
+
+<!-- Advice를 사용하기 위해 aspectjweaver 준비 -->
+<dependency>
+  	<groupId>org.aspectj</groupId>
+  	<artifactId>aspectjweaver</artifactId>
+  	<version>1.9.6</version>
+  	<scope>compile</scope>
+</dependency>
+```
+
+```xml
+<!-- mybatis-context.xml -->
+
+<!-- transaction 옵션 설정: xml 방식 사용 시 -->
+<tx:advice transaction-manager="transactionManager" id="txAdvice">
+	<tx:attributes>
+		<tx:method name="트랜잭션 적용할 메소드"/><!-- <tx:method/> 태그 속성은 아래 필기 참고 -->
+		<!-- 와일드카드로 묶이지 않는 여러 메소드에 적용하고 싶을 경우 <tx:method> 태그 추가 작성 가능 -->
+	</tx:attributes>
+</tx:advice>
+
+<aop:config>
+	<!-- 트랜잭션 advice 등록 -->
+	<aop:advisor advice-ref="txAdvice" pointcut="정규 표현식"/> 
+</aop:config>
+
+<!-- transaction 옵션 설정: annotation 방식 사용 시 -->
+<tx:annotation-driven transaction-manager="transactionManager"/>
+```
+
+### 트랜잭션 전파
+
+- 트랜잭션 처리 시 트랜잭션(커넥션) 생성, 유지 등 트랜잭션 전파를 설정할 수 있음
+- <tx:method> 태그의 propagation 속성에서 설정 가능
+- REQUIRED
+    - 기본값
+    - 메소드를 수행하는 데 트랜잭션 ⭕
+    - 현재 진행 중인 트랜잭션이 존재하면 해당 트랜잭션을 사용하고, 존재하지 않으면 새로운 트랜잭션을 생성함
+- MANDATORY
+    - 메소드를 수행하는 데 트랜잭션 ⭕
+    - 진행 중인 트랜잭션이 존재하지 않을 경우 Exception 발생
+- REQUIRES_NEW
+    - 메소드를 수행하는 데 트랜잭션 ⭕
+    - 항상 새로운 트랜잭션을 시작함
+    - 진행 중인 트랜잭션이 존재하면 기존 트랜잭션을 일시 중지하고 새로운 트랜잭션을 시작한 뒤, 새로운 트랜잭션이 종료되면 기존 트랜잭션을 계속함
+- SUPPORTS
+    - 메소드를 수행하는데 트랜잭션 ❌
+    - 진행 중인 트랜잭션이 존재하면 해당 트랜잭션 사용, 진행 중인 트랜잭션이 존재하지 않더라도 메소드 정상 동작
+- NOT_SUPPORTS
+    - 메소드를 수행하는데 트랜잭션 ❌
+    - 진행 중인 트랜잭션이 존재하면 메소드가 실행되는 동안 기존 트랜잭션을 일시 중지하고 메소드가 종료되면 기존 트랜잭션을 계속함
+- NEVER
+    - 메소드를 수행하는데 트랜잭션 ❌
+    - 진행 중인 트랜잭션이 존재할 경우 Exception 발생
+- NESTED
+    - 메소드를 수행하는 데 트랜잭션 ⭕
+    - 기존 트랜잭션이 존재하면 기존 트랜잭션과 중첩해 메소드 실행
+    - 기존 트랜잭션이 존재하지 않으면 REQUIRED와 동일하게 동작
+    - JDBC 3.0 이상이거나 JTA Provider가 기능을 지원할 때에만 사용 가능
+
+### 트랜잭션 격리 레벨
+
+- 다른 사용자가 테이블을 변경하고 있을 때 변경 내용에 대한 반영 여부 설정
+- <tx:method> 태그의 isolation 속성에서 설정 가능
+- DEFUALT
+    - 기본 설정
+    - Oracle의 경우 DEFUALT=READ_COMMITED
+- READ_UNCOMMITED
+    - 트랜잭션에서 처리되는 중이거나 아직 커밋되지 않은 데이터를 읽을 수 있음
+- READ_COMMITED
+    - 트랜잭션이 처리되는 동안 해당 데이터를 읽을 수 없음
+    - = 커밋이 완료된 트랜잭션만 읽을 수 있음
+- REPEATABLE_READ
+    - 트랜잭션이 시작되기 전에 커밋한 데이터만 읽을 수 있음
+    - 처음 읽어 온 데이터와 두 번째 읽어 온 데이터가 동일한 값을 가짐
+- SERIALIZABLE
+    - 동일한 데이터에 대해 동시에 두 개 이상의 트랜잭션 수행 ❌
+
+### 기타 설정
+
+- <tx:method> 태그 속성으로 설정 가능
+- name
+    - 트랜잭션을 적용할 메소드 이름 작성
+    - 와일드카드 사용 가능
+- rollback-for
+    - 트랜잭션을 rollback할 exception 타입 설정
+    - 기본적으로 비체크 예외가 일어났을 때만 rollback: 체크 예외는 실행된 곳까지 commit
+- no-rollback-for
+    - 트랜잭션을 rollback하지 않을 exception 타입 설정
+    - 기본적으로 비체크 예외가 일어났을 때만 rollback: 체크 예외는 실행된 곳까지 commit
+
+```java
+// xml 방식: 변화 없음
+
+@Service
+public class Service {
+	public int method(TransferDTO transfer) {}
+}
+```
+
+```java
+// annotation 방식
+
+@Service
+// 클래스 안의 모든 메소드에 트랜잭션 처리를 하고 싶을 때 클래스명 위에 어노테이션 사용
+@Transactional(속성 = "속성값", 속성 = "속성값"...)
+public class Service {
+
+	// 클래스 안의 특정 메소드에만 트랜잭션 처리를 하고 싶을 때 메소드명 위에 어노테이션 사용
+	@Transactional(속성 = "속성값", 속성 = "속성값"...)
+	public int method(TransferDTO transfer) {}
+
+}
+```
+
+# Tiles
+
+## 개념
+
+- 여러 파일을 하나의 파일처럼 묶어 화면에 보여주는 것
+- JSP의 include 기능과 비슷하지만 include보다 수정, 확장에 용이함
+
+## 사용 설정
+
+- pom.xml 설정
+    
+    ```xml
+    <!-- pom.xml -->
+    
+    <!-- tiles를 사용하기 위해 필요한 dependency 추가 -->
+    <dependency>
+        <groupId>org.apache.tiles</groupId>
+        <artifactId>tiles-jsp</artifactId>
+        <version>3.0.8</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.apache.tiles</groupId>
+        <artifactId>tiles-servlet</artifactId>
+        <version>3.0.8</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.apache.tiles</groupId>
+        <artifactId>tiles-extras</artifactId>
+        <version>3.0.8</version>
+    </dependency>
+    ```
+    
+- servlet-context.xml 설정
+    
+    ```xml
+    <!-- servlet-context.xml -->
+    
+    <!-- Tiles 등록 -->
+    <beans:bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" id="urlBasedViewResolver">
+    	<beans:property name="order" value="0"/> <!-- 순위를 높여 tiles 방식을 가장 먼저 시도하게 함 -->
+    	<beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
+    </beans:bean>
+    
+    <beans:bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+    	<beans:property name="definitions">
+    		<beans:list>
+    			<beans:value>tiles-definitions 파일 경로</beans:value>
+    		</beans:list>
+    	</beans:property>
+    </beans:bean>
+    ```
+    
+- tiles-definitions 파일 설정
+    
+    ```xml
+    <!-- tiles.xml : tiles-definitions 파일 -->
+    
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+    	"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+    
+    <tiles-definitions>
+    	<definition name="문서 별칭" template="레이아웃용 파일 경로(루트 기준)">
+    		<put-attribute name="속성 name값(jsp 속성 name값과 맞춰줌)" value="속성 파일 경로(루트 기준)"/>
+    		<!--
+    			속성 name값의 경우 뷰에 따라 달라져야 하는 메인 섹션은 템플릿 선언 태그에서 지정X
+    			아래 화면 구성을 처리하는 선언 태그에서 지정
+    		-->
+    	</definition>
+    	
+    	<!-- Controller에서 return하는 뷰의 정보에 따라 화면 구성 처리 -->
+    	<definition name="view 경로(와일드카드 사용 가능)" extends="문서 별칭(<definition> 태그로 선언된 문서 별칭 입력)">
+    		<put-attribute name="속성 name값(jsp 속성 name값과 맞춰줌)" value="속성 파일 경로(루트 기준)"/>
+    		<!--
+    			view 경로에 와일드카드가 포함될 경우 속성 파일 경로에 해당 부분은 {n}으로 맞춰줌
+    			1번째 와일드카드의 경우 {1}...
+    			view 경로에 와일드카드를 연속해서 사용하는 경우(**) 하위의 모든 파일이 선택됨
+    		-->
+    	</definition>
+    </tiles-definitions>
+    ```
+    
+- 레이아웃 JSP 파일 설정
+    
+    ```html
+    <%@ page language="java" contentType="text/html; charset=UTF-8"
+        pageEncoding="UTF-8"%>
+    <!-- tiles taglib 추가 -->
+    <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
+    <!DOCTYPE html>
+    <html>
+    	<head>
+    		<meta charset="UTF-8">
+    		<title></title>
+    	</head>
+    	<body>
+    			<!-- <tiles:insertAttribute> 태그로 레이아웃 지정 -->
+    			<tiles:insertAttribute name="속성 name값"/>
+    	</body>
+    </html>
+    ```
+    
+
+# Bean Annotation
+
+- 프레임워크에서 제공하는 라이브러리 속 객체를 메소드를 통해 어노테이션으로 선언
+
+```java
+/**
+ * 어노테이션 기반 환경 설정을 돕는 annotation
+ * 이 클래스 내부에 @Bean 선언한 메소드가 리턴하는 객체를 bean으로 등록해줌
+ * */
+@Configuration
+public class Configuration {
+	/**
+	 * 라이브러리 객체를 리턴하는 클래스로 만든 뒤 @Bean 어노테이션으로 선언함
+	 * */
+	@Bean
+	public 라이브러리객체(리턴타입) method() {
+		라이브러리객체 result = new 라이브러리객체();
+		urlBasedViewResolver.setOrder(0); // 값을 지정해야 하는 필드가 있을 경우 세터 이용
+		return result;
+	}
+```
