@@ -792,7 +792,7 @@ controller.method();
     		return "문자열";
     	}
     
-    	@ModelAttribute("{템플릿변수}")
+    	@RequestMapping("{템플릿변수}")
     	/*
     	 * restful 방식
     	 * 루트 바로 아래 경로에 대한 모든 요청 중 다른 메소드와 연결되지 않은 요청을 모두 가져옴
