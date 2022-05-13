@@ -366,25 +366,11 @@ private 필드타입 필드명;
 @Resource(name = "name값")
 ```
 
-# Aspect Oriented Programming
-
 ## Aspect Oriented Programming
 
 - = 관점 지향 프로그래밍
 - 프로그램의 기능 중 핵심 기능과 중복되는 공통 기능을 완전히 분리한 뒤 공통 기능을 따로 제작해 재사용하는 것
 - ex) 보안, 트랜잭션, 로그, 세션 유무 처리, 한글 인코딩 처리 등
-
-## 사용 설정
-
-```xml
-<!-- AOP 사용하기 위해 dependency 추가 -->
-<dependency>
-  	<groupId>org.aspectj</groupId>
-  	<artifactId>aspectjweaver</artifactId>
-  	<version>1.9.6</version>
-  	<scope>compile</scope> <!-- 기본값 runtime -->
-</dependency>
-```
 
 ## 용어 정리
 
@@ -400,12 +386,12 @@ private 필드타입 필드명;
 
 - 어플리케이션을 실행할 때 특정 작업이 시작되는 시점
 - = Advice를 삽입하는 지점
-- = JoinPoint, proceedingJoinPoint 인터페이스 ❌
+- ≠ JoinPoint, proceedingJoinPoint 인터페이스
 
 ### Pointcut
 
 - 여러 개의 Joinpoint를 하나로 묶은 것
-- 정규식 표현식을 사용해 묶음
+- 정규 표현식을 사용해 패턴화함
 
 ### JoinPoint Interface
 
@@ -430,6 +416,135 @@ private 필드타입 필드명;
 
 - AOP Proxy Server에서 joinpoint에 advice를 삽입해주는 것
 
+## 사용 설정
+
+```xml
+<!-- AOP 사용하기 위해 dependency 추가 -->
+<dependency>
+  	<groupId>org.aspectj</groupId>
+  	<artifactId>aspectjweaver</artifactId>
+  	<version>1.9.6</version>
+  	<scope>compile</scope> <!-- 기본값 runtime: java 베이스로 테스트하고 싶다면 compile로 변경 -->
+</dependency>
+```
+
+## AOP Proxy Server
+
+- joinpoint에 advice를 삽입(=weaving)해주는 도구
+- 물리적으로 존재하는 서버 ❌ 개념적으로 존재
+
+### 종류
+
+- J2SE
+    - 디폴트, 권장 방식
+    - 타겟 대상에게 인터페이스가 있을 경우 구현체가 아닌 인터페이스로 접근해야 적용됨(=자바 규칙을 맞춰야 적용)
+    
+    ```java
+    ApplicationContext context = new ClassPathXmlApplicationContext("xml 파일 경로");
+    ControllerImpl controller= context.getBean("target", ControllerImpl.class); // 적용X
+    Controller controller= context.getBean("target", Controller.class); // 적용O
+    ```
+    
+- CGLIB
+    - 타겟 대상에게 인터페이스가 있어도 구현체로 접근 가능
+    
+    ```java
+    ApplicationContext context = new ClassPathXmlApplicationContext("xml 파일 경로");
+    ControllerImpl controller= context.getBean("target", ControllerImpl.class); // 적용O
+    Controller controller= context.getBean("target", Controller.class); // 적용O
+    ```
+    
+
+### 생성 방법
+
+```xml
+<!--
+	servlet-context.xml에 AOP Proxy Server 생성
+
+	proxy-target-class: true일 경우 CGLIB, false일 경우 J2SE 방식으로 생성(기본값)
+	expose-proxy: AopContext를 통해 메소드를 호출할 경우 사전/사후 처리 여부 선택
+	              true일 경우 사전/사후 처리O, false일 경우 사전/사후 처리X -> 에러 발생(기본값)
+-->
+
+<!-- xml 방식 사용 시 -->
+<aop:config proxy-target-class="boolean" expose-proxy="boolean">
+</aop:config>
+
+<!-- Annotation 방식 사용 시 -->
+<aop:aspectj-autoproxy proxy-target-class="boolean" expose-proxy="boolean"/>
+```
+
+```java
+// expose-proxy="true" 설정 후 AopContext를 사용하면 직접 호출 시 사전/사후 처리O
+Controller controller = (Controller)AopContext.currentProxy();
+controller.method();
+```
+
+### Weaving 적용 방법
+
+- xml 기반 설정
+    
+    ```xml
+    <!--
+    	xml 기반 weaving 설정
+    	: servlet-context.xml에 등록한 <aop:config> 태그 내에 <aop:aspect> 태그 입력
+    	  aspect 갯수만큼 <aop:aspect> 태그 작성 가능
+    -->
+    
+    <aop:config>
+    	<aop:aspect id="aspect id값" ref="advice bean id값">
+    		<aop:around method="around" pointcut="정규 표현식"/> <!-- around 방식 advice일 때 -->
+    		<aop:before method="before" pointcut="정규 표현식"/> <!-- before 방식 advice일 때 -->
+    		<aop:after method="after" pointcut="정규 표현식"/> <!-- after 방식 advice일 때 -->
+    		<aop:afterReturning method="afterReturning" pointcut="정규 표현식"/> <!-- afterReturning 방식 advice일 때 -->
+    		<aop:afterThrowing method="afterThrowing" pointcut="정규 표현식"/> <!-- afterThrowing 방식 advice일 때 -->
+    	</aop:aspect>
+    </aop:config>
+    ```
+    
+- JavaBase 설정 = Annotation 방식
+    
+    ```xml
+    <!--
+    	Annotation 방식 weaving 설정
+    	: <aop:aspectj-autoproxy> 태그를 사용해 AOP Proxy Server 생성
+    -->
+    
+    <aop:aspectj-autoproxy/> <!-- AOP 어노테이션 자동 스캔 -->
+    ```
+    
+    ```java
+    /**
+     * 클래스명 위에 어노테이션 추가
+     * */
+    @Component// 객체 생성
+    @Aspect // 공통 관심 사항 생성
+    public class Advice {
+    
+    	// advice 메소드 상단에 사용할 방식의 어노테이션 입력
+    	@Around("정규 표현식")
+    	@Before("정규 표현식")
+    	@AfterReturning(pointcut = "정규 표현식", returning = "리턴 타입")
+    	@AfterThrowing(pointcut = "정규 표현식", throwing = "e")
+    	@After("정규 표현식")
+    	public 리턴타입 메소드명(파라미터) {}
+    
+    }
+    ```
+    
+- 참고: pointcut 정규 표현식
+    
+    ```xml
+    <!--
+    	pointcut 정규 표현식
+    	: 와일드 카드 사용 가능, 대소문자 구분
+    
+    	0개 이상의 모든 파라미터를 입력받는 메소드를 표현하고 싶을 경우 메소드명(..) 형태로 작성
+    -->
+    pointcut="execution(접근제한자 리턴타입 패키지경로.클래스명.메소드명(인수 형태))"
+    ```
+    
+
 ## Advice
 
 - Spring에서 AOP에 의한 공통 기능(=공통 관심 사항)을 부르는 용어
@@ -446,14 +561,14 @@ private 필드타입 필드명;
  * : 사전 처리와 사후 처리를 나누기 위해 중간에 타겟을 호출하는 방식으로 제작
  * 
  * @return: 타겟 대상의 리턴값을 리턴 - 어떤 type으로 리턴될 지 알 수 없기 때문에 Object type으로 리턴
- * @param: proceedingJoinPoint - proceedingJoinPoint를 이용해 타겟 대상 호출
- * @throws: joinPoint.proceed() 메소드에 필요한 예외처리를 던짐
+ * @param: proceedingJoinPoint - 타겟 대상의 정보를 제공하는 proceedingJoinPoint 객체를 이용해 타겟 대상 호출
+ * @throws: proceedingJoinPoint.proceed() 메소드에 필요한 예외처리를 던짐
  * */
-public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 	// 사전 처리
 	
-	// 실제 타겟 대상을 호출
-	Object obj = joinPoint.proceed();
+	// 실제 타겟 대상 or 다음에 처리할 advice를 호출
+	Object obj = proceedingJoinPoint.proceed();
 	
 	// 사후 처리
 	
@@ -477,112 +592,20 @@ public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 
 - 예외가 발생했을 때만 사후 처리하는 advice
 
-## AOP Proxy Server
-
-- joinpoint에 advice를 삽입(=weaving)해주는 도구
-- 물리적으로 존재하는 서버 ❌ 개념적으로 존재
-
-### 종류
-
-- J2SE
-    - 디폴트, 권장 방식
-    - 자바 기본 문법을 사용
-    - 타겟 대상에게 인터페이스가 있을 경우 구현체가 아닌 인터페이스로 접근해야 적용됨
-    
-    ```java
-    ApplicationContext context = new ClassPathXmlApplicationContext("xml 파일 경로");
-    ControllerImpl controller= context.getBean("target", ControllerImpl.class); // 적용X
-    Controller controller= context.getBean("target", Controller.class); // 적용O
-    ```
-    
-- CGLIB
-    - 타겟 대상에게 인터페이스가 있어도 구현체로 접근 가능
-    
-    ```java
-    ApplicationContext context = new ClassPathXmlApplicationContext("xml 파일 경로");
-    ControllerImpl controller= context.getBean("target", ControllerImpl.class); // 적용O
-    Controller controller= context.getBean("target", Controller.class); // 적용O
-    ```
-    
-
-### 생성 방법
-
-```xml
-<!--
-	AOP Proxy Server 생성
-
-	proxy-target-class: true일 경우 CGLIB, false일 경우 J2SE 방식으로 생성
-	expose-proxy: AOP Proxy Server가 호출하지 않고 개발자가 직접 호출할 경우 사전/사후 처리 여부 선택
-	              true일 경우 사전/사후 처리O, false일 경우 사전/사후 처리X
--->
-
-<aop:config proxy-target-class="boolean" expose-proxy="boolean">
-</aop:config>
-or
-<aop:aspectj-autoproxy proxy-target-class="boolean" expose-proxy="boolean"/>
-```
+## 예제 코드: 메소드 내에서 호출한 메소드에서 advice 적용하는 방법
 
 ```java
-// expose-proxy="true" 설정 후 AopContext를 사용하면 직접 호출 시 사전/사후 처리O
-Controller controller = (Controller)AopContext.currentProxy();
-controller.method();
+public void method() {
+
+	/**
+	 * 1. AOP Proxy Server 생성 시 expose-proxy 속성을 true로 지정
+	 * 2. AopContext 객체를 이용해 AOP Proxy Server로부터 메소드 호출
+	 * */
+	LogicClass logicClass = (LogicClass)AopContext.currentProxy();
+	logicClass.logicMethod();
+
+}
 ```
-
-### Weaving 적용 방법
-
-- xml 기반 설정
-    
-    ```xml
-    <!--
-    	xml 기반 weaving 설정
-    	: <aop:config> 태그 내에 <aop:aspect> 태그 입력
-    	  aspect 갯수만큼 <aop:aspect> 태그 작성 가능
-    -->
-    
-    <aop:config>
-    	<aop:aspect id="aspect id값 ref="advice id값">
-    		<aop:around | before | after | afterReturning | afterThrowing
-    		method="around | before | after | afterReturning | afterThrowing" pointcut="정규 표현식"/>
-    	</aop:aspect>
-    </aop:config>
-    ```
-    
-- JavaBase 설정 = Annotation 방식
-    
-    ```xml
-    <!--
-    	Annotation 방식 weaving 설정
-    	: <aop:aspectj-autoproxy> 태그를 사용해 AOP Proxy Server 생성
-    -->
-    
-    <aop:aspectj-autoproxy/>
-    ```
-    
-    ```java
-    @Component // 객체 생성
-    @Aspect // 공통 관심 사항 생성
-    public class Advice {
-    
-    	// advice 메소드 상단에 원하는 방식의 annotation 입력
-    	@Around("정규 표현식")
-    	@Before("정규 표현식")
-    	@AfterReturning(pointcut = "정규 표현식", returning = "리턴 타입")
-    	@AfterThrowing(pointcut = "정규 표현식", throwing = "e")
-    	@After("정규 표현식")
-    	public 리턴타입 메소드명(파라미터) {}
-    
-    }
-    ```
-    
-- 참고: pointcut 정규 표현식
-    
-    ```xml
-    <!--
-    	pointcut 정규 표현식
-    	: 와일드 카드를 사용해 범위 표현 가능, 대소문자 구분
-    -->
-    pointcut="execution(리턴타입 패키지경로.클래스명.메소드명(인수 형태))"
-    ```
 
 # SpringMVC
 
@@ -803,7 +826,6 @@ controller.method();
     
     }
     ```
-    
 
 ## Controller
 
@@ -1539,8 +1561,9 @@ public class Service {
 
 ```java
 /**
- * 어노테이션 기반 환경 설정을 돕는 annotation
- * 이 클래스 내부에 @Bean 선언한 메소드가 리턴하는 객체를 bean으로 등록해줌
+ * @Configuration
+ * : 어노테이션 기반 환경 설정을 돕는 annotation
+ * : 이 클래스 내부에 @Bean 선언한 메소드가 리턴하는 객체를 bean으로 등록해줌
  * */
 @Configuration
 public class Configuration {
@@ -1553,4 +1576,5 @@ public class Configuration {
 		urlBasedViewResolver.setOrder(0); // 값을 지정해야 하는 필드가 있을 경우 세터 이용
 		return result;
 	}
+}
 ```

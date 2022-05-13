@@ -777,7 +777,8 @@ public void select() {
  * @param: 인수 타입 - 쿼리문에 입력해야 할 인수를 입력받음
  * */
 @Select("select sql문")
-결과타입 select(인수);
+결과타입 select(자료형 인수); // 파라미터가 하나만 들어올 때
+결과타입 select(@Param("인수명") 자료형 인수, @Param("인수명") 자료형 인수); // 파라미터가 여러 개 들어올 때
 ```
 
 ```java
@@ -812,7 +813,8 @@ public void select() {
  * @param: 인수 타입 - 쿼리문에 입력해야 할 인수를 입력받음
  * */
 @Insert("insert sql문")
-int insert(인수);
+int insert(자료형 인수); // 파라미터가 하나만 들어올 때
+int insert(@Param("인수명") 자료형 인수, @Param("인수명") 자료형 인수); // 파라미터가 여러 개 들어올 때
 ```
 
 ```java
@@ -849,7 +851,8 @@ public void insert() {
  * @param: 인수 타입 - 쿼리문에 입력해야 할 인수를 입력받음
  * */
 @Update("update sql문")
-int update(인수);
+int update(자료형 인수); // 파라미터가 하나만 들어올 때
+int update(@Param("인수명") 자료형 인수, @Param("인수명") 자료형 인수); // 파라미터가 여러 개 들어올 때
 ```
 
 ```java
@@ -886,7 +889,8 @@ public void update() {
  * @param: 인수 타입 - 쿼리문에 입력해야 할 인수를 입력받음
  * */
 @Delete("delete sql문")
-int delete(인수);
+int delete(자료형 인수); // 파라미터가 하나만 들어올 때
+int delete(@Param("인수명") 자료형 인수, @Param("인수명") 자료형 인수); // 파라미터가 여러 개 들어올 때
 ```
 
 ```java
