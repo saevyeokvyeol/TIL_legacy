@@ -366,6 +366,8 @@ private 필드타입 필드명;
 @Resource(name = "name값")
 ```
 
+# Aspect Oriented Programming
+
 ## Aspect Oriented Programming
 
 - = 관점 지향 프로그래밍
@@ -489,15 +491,36 @@ controller.method();
     	xml 기반 weaving 설정
     	: servlet-context.xml에 등록한 <aop:config> 태그 내에 <aop:aspect> 태그 입력
     	  aspect 갯수만큼 <aop:aspect> 태그 작성 가능
+    		하나의 aspect에서 실행할 advice의 갯수만큼 advice 작성 가능
     -->
     
     <aop:config>
-    	<aop:aspect id="aspect id값" ref="advice bean id값">
-    		<aop:around method="around" pointcut="정규 표현식"/> <!-- around 방식 advice일 때 -->
-    		<aop:before method="before" pointcut="정규 표현식"/> <!-- before 방식 advice일 때 -->
-    		<aop:after method="after" pointcut="정규 표현식"/> <!-- after 방식 advice일 때 -->
-    		<aop:afterReturning method="afterReturning" pointcut="정규 표현식"/> <!-- afterReturning 방식 advice일 때 -->
-    		<aop:afterThrowing method="afterThrowing" pointcut="정규 표현식"/> <!-- afterThrowing 방식 advice일 때 -->
+    	<!-- 같은 포인트컷을 여러 aspect에서 사용하고 싶다면 미리 저장해두고 참조할 수 있음 -->
+    	<aop:pointcut expression="정규 표현식" id="pointCut id값"/>
+    
+    	<!--
+    		ref: bean으로 등록한 advice 객체의 id값
+    		order: 하나의 타겟 대상(=비즈니스 로직 메소드)에 여러 애스펙트를 적용하고 싶을 경우 실행 순서 설정 가능
+    	-->
+    	<aop:aspect id="aspect id값" ref="advice bean id값" order="n(실행 순서)">
+    
+    		<!-- around 방식 advice일 때 -->
+    		<aop:around method="메소드명" pointcut="정규 표현식" or pointcut-ref="pointCut id값"/>
+    		
+    		<!-- before 방식 advice일 때 -->
+    		<aop:before method="메소드명" pointcut="정규 표현식" or pointcut-ref="pointCut id값"/>
+    
+    		<!-- afterReturning 방식 advice일 때 -->
+    		<aop:afterReturning method="메소드명" pointcut="정규 표현식" or pointcut-ref="pointCut id값"
+    		returning="변수명"/> <!-- return값을 인수로 받고싶을 때 return값을 받을 Object 인수 변수명을 입력 -->
+    		
+    		<!-- afterThrowing 방식 advice일 때 -->
+    		<aop:afterThrowing method="메소드명" pointcut="정규 표현식" or pointcut-ref="pointCut id값"
+    		throwing="변수명"/> <!-- 예외 정보를 받고 싶을 때 예외 정보를 받을 Throwable 인수 변수명을 입력 -->
+    
+    		<!-- after 방식 advice일 때 -->
+    		<aop:after method="메소드명" pointcut="정규 표현식" or pointcut-ref="pointCut id값"/>
+    
     	</aop:aspect>
     </aop:config>
     ```
@@ -519,15 +542,29 @@ controller.method();
      * */
     @Component// 객체 생성
     @Aspect // 공통 관심 사항 생성
+    @Order(n) // 하나의 타겟 대상에 실행할 애스팩트가 두 개 이상인 경우 실행 순서 설정 가능
     public class Advice {
     
     	// advice 메소드 상단에 사용할 방식의 어노테이션 입력
-    	@Around("정규 표현식")
-    	@Before("정규 표현식")
-    	@AfterReturning(pointcut = "정규 표현식", returning = "리턴 타입")
-    	@AfterThrowing(pointcut = "정규 표현식", throwing = "e")
-    	@After("정규 표현식")
+    	@Around("정규 표현식 | pointCut클래스명.메소드명()")
+    	@Before("정규 표현식 | pointCut클래스명.메소드명()")
+    	@AfterReturning(pointcut = "정규 표현식 | pointCut클래스명.메소드명()", returning = "변수명") // 리턴값을 받을 변수명 입력
+    	@AfterThrowing(pointcut = "정규 표현식 | pointCut클래스명.메소드명()", throwing = "변수명") // 예외 정보를 받을 변수명 입력
+    	@After("정규 표현식 | pointCut클래스명.메소드명()")
     	public 리턴타입 메소드명(파라미터) {}
+    
+    }
+    ```
+    
+    ```java
+    /**
+     * 같은 포인트컷을 여러 aspect에서 사용하고 싶다면 클래스 내의 메소드에서 미리 선언해두고 참조할 수 있음
+     * */
+    
+    public class PointCutClass{
+    
+    	@Pointcut("정규 표현식")
+    	public void pointCutMethod() {}
     
     }
     ```
@@ -558,16 +595,20 @@ controller.method();
 ```java
 /**
  * Around 방식 Advice 기본 패턴
- * : 사전 처리와 사후 처리를 나누기 위해 중간에 타겟을 호출하는 방식으로 제작
+ * : 사전 처리와 사후 처리를 나눌 지점을 명시하기 위해 중간에 타겟을 호출하는 방식으로 제작
  * 
- * @return: 타겟 대상의 리턴값을 리턴 - 어떤 type으로 리턴될 지 알 수 없기 때문에 Object type으로 리턴
- * @param: proceedingJoinPoint - 타겟 대상의 정보를 제공하는 proceedingJoinPoint 객체를 이용해 타겟 대상 호출
- * @throws: proceedingJoinPoint.proceed() 메소드에 필요한 예외처리를 던짐
+ * @return: 타겟 대상의 리턴값을 리턴: 어떤 type으로 리턴될 지 알 수 없기 때문에 Object type으로 리턴
+ * @param: ProceedingJoinPoint
+ *         - 타겟 대상의 정보를 제공하는 JoinPoint를 확장해 타겟 대상을 실행시키는 proceed() 메소드를 추가한 객체
+ *           proceed()를 이용해 타겟 대상 호출(=비즈니스 로직 실행)시킴
+ * @throws: Throwable - 타겟 대상 호출(=비즈니스 로직 실행)했을 때 발생할 수 있는 예외/에러를 던짐
  * */
+
+@Around("정규 표현식") // 어노테이션 방식으로 생성할 때 입력, xml 방식 사용 시 X
 public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 	// 사전 처리
 	
-	// 실제 타겟 대상 or 다음에 처리할 advice를 호출
+	// 실제 타겟 대상 or 다음에 처리할 advice 호출 (=비즈니스 로직 실행)
 	Object obj = proceedingJoinPoint.proceed();
 	
 	// 사후 처리
@@ -576,21 +617,101 @@ public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
 }
 ```
 
-### BeforeAdvice
+### Before Advice
 
 - 사전 처리만 하는 advice
 
-### AfterAdvice
+```java
+/**
+ * Before 방식 Advice 기본 패턴
+ * : 사전 처리만 진행하기 때문에 타겟 대상 호출 X 사전 처리 종료 후 자동으로 타겟 대상이 실행됨
+ * 
+ * @param: JoinPoint - 타겟 대상의 정보를 제공하는 JoinPoint 객체를 이용해 필요한 타겟 대상 정보를 가져옴
+ * */
 
-- 예외 발생 여부와 관계없이 무조건 사후 처리 하는 advice
+@Before("정규 표현식") // 어노테이션 방식으로 생성할 때 입력, xml 방식 사용 시 X
+public void before(JoinPoint joinPoint) {
+	// 사전 처리
+}
+```
 
 ### After-returning Advice
 
 - 정상 동작 시에만 사후 처리하는 advice
 
-### After-throwingAdvice
+```java
+/**
+ * After-returning 방식 Advice 기본 패턴
+ * : 타겟 대상이 실행되고 난 뒤에 실행되기 때문에 타겟 대상 호출 X
+ * 
+ * @param: JoinPoint - 타겟 대상의 정보를 제공하는 JoinPoint 객체를 이용해 필요한 타겟 대상 정보를 가져옴
+ *         Object obj - Weaving에서 설정 시 타겟 대상의 리턴값이 자동으로 입력되어 들어옴
+ * */
+
+@AfterReturning("정규 표현식") // 어노테이션 방식으로 생성할 때 입력, xml 방식 사용 시 X
+public void afterReturning(JoinPoint joinPoint) {
+	// 사후 처리
+}
+```
+
+### After-throwing Advice
 
 - 예외가 발생했을 때만 사후 처리하는 advice
+
+```java
+/**
+ * After-throwing 방식 Advice 기본 패턴
+ * : 타겟 대상이 실행되고 난 뒤에 실행되기 때문에 타겟 대상 호출 X
+ * 
+ * @param: JoinPoint - 타겟 대상의 정보를 제공하는 JoinPoint 객체를 이용해 필요한 타겟 대상 정보를 가져옴
+ *         Throwable - 예외가 발생했을 때 해당 예외 정보를 Throwable을 통해 받음
+ * */
+
+@AfterThrowing("정규 표현식") // 어노테이션 방식으로 생성할 때 입력, xml 방식 사용 시 X
+public void afterThrowing(JoinPoint joinPoint, Throwable e) {
+	// 사후 처리
+}
+```
+
+### After Advice
+
+- 예외 발생 여부와 관계없이 무조건 사후 처리 하는 advice
+
+```java
+/**
+ * After 방식 Advice 기본 패턴
+ * : 타겟 대상이 실행되고 난 뒤에 실행되기 때문에 타겟 대상 호출 X
+ * 
+ * @param: JoinPoint - 타겟 대상의 정보를 제공하는 JoinPoint 객체를 이용해 필요한 타겟 대상 정보를 가져옴
+ * */
+
+@After("정규 표현식") // 어노테이션 방식으로 생성할 때 입력, xml 방식 사용 시 X
+public void around(JoinPoint joinPoint) {
+	// 사후 처리
+}
+```
+
+### 참고: JoinPoint와 ProceedingJoinPoint 주요 메소드
+
+- JoinPoint
+    
+    ```java
+    Object obj = joinPoint.getSignature(); // 타겟 대상(=비즈니스 로직을 구현한 메소드)를 리턴함
+    
+    String methodName = joinPoint.getSignature().getName(); // 타겟 대상의 이름을 가져옴
+    
+    Object[] params = joinPoint.getArgs(); // 타겟 대상의 파라미터들을 리턴함
+    ```
+    
+- ProceedingJoinPoint
+    
+    ```java
+    /**
+     * 타겟 대상(=비즈니스 로직을 구현한 메소드)를 호출해 실행하고 결과값을 리턴함
+     * */
+    Object obj = proceedingJoinPoint.proceed();
+    ```
+    
 
 ## 예제 코드: 메소드 내에서 호출한 메소드에서 advice 적용하는 방법
 
@@ -1020,6 +1141,30 @@ public void method() {
         <!-- @ExceptionHandler과 SimpleMappingExcepeionResolver를 동시에 사용하고 싶을 때 아래 태그 필요 -->
         <annotation-driven/>
         ```
+        
+    - Annotation 방식으로 SimpleMappingExcepeionResolver 세팅
+        
+        ```java
+        /**
+         * Config.java 파일
+         * */
+        
+        @Configuration // Bean 등록 전용 클래스를 선언하기 위한 어노테이션
+        public class Config {
+        
+        	@Bean // Bean 등록을 위한 어노테이션
+        	public SimpleMappingExceptionResolver getSimpleMappingExceptionResolver() {
+        		SimpleMappingExceptionResolver exceptionResolver = new SimpleMappingExceptionResolver();
+        		
+        		Properties pro = new Properties(); // 처리할 exception과 이동할 페이지를 매핑할 프로퍼티 생성
+        		pro.put("처리할 exception", "이동할 페이지"); // 처리할 exception과 이동할 페이지 입력
+        		
+        		exceptionResolver.setExceptionMappings(pro); // exceptionResolver에 매핑한 프로퍼티 입력
+        		
+        		return exceptionResolver;
+        	}
+				}
+        ```
 
 # Upload, Download
 
@@ -1027,24 +1172,52 @@ public void method() {
 
 ### 준비 작업
 
-```xml
-<!-- pom.xml에 파일 업로드 dependency 추가 -->
-<dependency>
-	<groupId>org.apache.commons</groupId>
-	<artifactId>commons-io</artifactId>
-	<version>1.3.2</version>
-</dependency>
-<dependency>
-	<groupId>commons-fileupload</groupId>
-	<artifactId>commons-fileupload</artifactId>
-	<version>1.3.1</version>
-</dependency>
-```
-
-```xml
-<!-- servlet-context.xml에 파일 업로드에 필요한 Bean 생성 -->
-<bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver"/>
-```
+- dependency 추가
+    
+    ```xml
+    <!-- pom.xml에 파일 업로드 dependency 추가 -->
+    <dependency>
+    	<groupId>org.apache.commons</groupId>
+    	<artifactId>commons-io</artifactId>
+    	<version>1.3.2</version>
+    </dependency>
+    
+    <dependency>
+    	<groupId>commons-fileupload</groupId>
+    	<artifactId>commons-fileupload</artifactId>
+    	<version>1.3.1</version>
+    </dependency>
+    ```
+    
+- Bean 등록: xml 방식
+    
+    ```xml
+    <!-- servlet-context.xml에 파일 업로드에 필요한 Bean 생성 -->
+    <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver"/>
+    ```
+    
+- Bean 등록: Annotation 방식
+    
+    ```java
+    /**
+     * Config.java 파일
+     * */
+    
+    @Configuration // Bean 등록 전용 클래스를 선언하기 위한 어노테이션
+    public class Config {
+    
+    	/**
+    	 * 업로드 컴포넌트 생성
+    	 * : 메소드 이름을 반드시 multipartResolver로 생성
+    	 * */
+    	@Bean // Bean 등록을 위한 어노테이션
+    	public CommonsMultipartResolver multipartResolver() {
+    		CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
+    		return commonsMultipartResolver;
+    	}
+    }
+    ```
+    
 
 ### JSP(HTML) 마크업
 
@@ -1105,12 +1278,35 @@ public void upload(UploadDTO dto, HttpSession session) {
 
 ### 준비 작업
 
-```xml
-<!-- servlet-context.xml에 파일 업로드에 필요한 Bean 생성 -->
-<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
-	<property name="order" value="1"/> <!-- 우선순위를 높여 가장 먼저 시도하게 함 -->
-</bean>
-```
+- Bean 등록: xml 방식
+    
+    ```xml
+    <!-- servlet-context.xml에 파일 업로드에 필요한 Bean 생성 -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+    	<property name="order" value="0"/> <!-- 우선순위를 높여 가장 먼저 시도하게 함 -->
+    </bean>
+    ```
+    
+- Bean 등록: Annotation 방식
+    
+    ```java
+    /**
+     * Config.java 파일
+     * */
+    @Configuration // Bean 등록 전용 클래스를 선언하기 위한 어노테이션
+    public class Config {
+    	
+    	@Bean // Bean 등록을 위한 어노테이션
+    	public BeanNameViewResolver getBeanNameViewResolver() {
+    		BeanNameViewResolver beanNameViewResolver = new BeanNameViewResolver();
+    		
+    		beanNameViewResolver.setOrder(0); // 우선순위를 높여 가장 먼저 시도하게 함
+    		
+    		return beanNameViewResolver;
+    	}
+    }
+    ```
+    
 
 ### JSP(HTML) 마크업
 
@@ -1151,43 +1347,44 @@ public class DownLoadCustomView extends AbstractView{
 	protected void renderMergedOutputModel(Map<String, Object> map,
 		HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		File file = (File)map.get("fname"); // 다운로드 할 파일을 fname으로 꺼냄
+		File file = (File) map.get("fname"); // 다운로드 할 파일을 맵에서 꺼냄
 		
-		response.setContentType("application/download;charset-UTF-8");
-		response.setContentLength((int)file.length());
-		
+		response.setContentType("application/download;charset-UTF-8"); // 인코딩 설정
+		response.setContentLength((int) file.length()); // 파일 길이 설정
+
+		// 브라우저 종류에 맞춰 인코딩
 		String userAgent = request.getHeader("User-Agent");
-		
+
 		boolean isInternetExplorer = userAgent.indexOf("MSIE") > -1;
 		String fileName = null;
 		
-		// 브라우저 종류에 맞춰 인코딩
-		if(isInternetExplorer) {
-			fileName = URLEncoder.encode(file.getName() , "UTF-8");
-		} else {
-			fileName = new String(file.getName().getBytes("UTF-8") , "iso-8859-1");
-		}
-		
-		response.setHeader("Content-Disposition","attachment;filename=\"" + fileName.replace("+", "%20") + "\";");
-		//response.setHeader("Content-Transfer-Encoding", "binary");
-		
+		if (isInternetExplorer)
+			fileName = URLEncoder.encode(file.getName(), "UTF-8");
+		else
+			fileName = new String(file.getName().getBytes("UTF-8"), "iso-8859-1");
+		// 인코딩 종료
+
+		response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName.replace("+", "%20") + "\";");
+		// response.setHeader("Content-Transfer-Encoding", "binary");
+
 		OutputStream out = response.getOutputStream();
 		FileInputStream fis = null;
-
 		try {
 			fis = new FileInputStream(file);
-			FileCopyUtils.copy(fis, out); // inputStream 정보를 읽어 outputStream에 저장
-		} catch(Exception e) {
-			//map.put("error", e.toString());
+			FileCopyUtils.copy(fis, out); // 파일 복사
+
+		} catch (Exception e) {
+			// map.put("error", e.toString());
 			e.printStackTrace();
 		} finally {
-			if(fis != null) {
+			if (fis != null) {
 				try {
 					fis.close();
-				} catch(IOException ex) {}
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
-
 		out.flush();
 	}
 }
@@ -1459,51 +1656,84 @@ public class Service {
 
 ## 사용 설정
 
-- pom.xml 설정
-    
-    ```xml
-    <!-- pom.xml -->
-    
-    <!-- tiles를 사용하기 위해 필요한 dependency 추가 -->
-    <dependency>
-        <groupId>org.apache.tiles</groupId>
-        <artifactId>tiles-jsp</artifactId>
-        <version>3.0.8</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.apache.tiles</groupId>
-        <artifactId>tiles-servlet</artifactId>
-        <version>3.0.8</version>
-    </dependency>
-    
-    <dependency>
-        <groupId>org.apache.tiles</groupId>
-        <artifactId>tiles-extras</artifactId>
-        <version>3.0.8</version>
-    </dependency>
-    ```
-    
-- servlet-context.xml 설정
-    
-    ```xml
-    <!-- servlet-context.xml -->
-    
-    <!-- Tiles 등록 -->
-    <beans:bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" id="urlBasedViewResolver">
-    	<beans:property name="order" value="0"/> <!-- 순위를 높여 tiles 방식을 가장 먼저 시도하게 함 -->
-    	<beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
-    </beans:bean>
-    
-    <beans:bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
-    	<beans:property name="definitions">
-    		<beans:list>
-    			<beans:value>tiles-definitions 파일 경로</beans:value>
-    		</beans:list>
-    	</beans:property>
-    </beans:bean>
-    ```
-    
+### dependency 추가
+
+```xml
+<!-- pom.xml -->
+
+<!-- tiles를 사용하기 위해 필요한 dependency 추가 -->
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-jsp</artifactId>
+    <version>3.0.8</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-servlet</artifactId>
+    <version>3.0.8</version>
+</dependency>
+
+<dependency>
+    <groupId>org.apache.tiles</groupId>
+    <artifactId>tiles-extras</artifactId>
+    <version>3.0.8</version>
+</dependency>
+```
+
+### Tiles Bean 등록: xml 방식
+
+```xml
+<!-- servlet-context.xml -->
+
+<!-- Tiles 등록 -->
+<beans:bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" id="urlBasedViewResolver">
+	<beans:property name="order" value="0"/> <!-- 순위를 높여 tiles 방식을 가장 먼저 시도하게 함 -->
+	<beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
+</beans:bean>
+
+<beans:bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+	<beans:property name="definitions">
+		<beans:list>
+			<beans:value>tiles-definitions 파일 경로</beans:value>
+		</beans:list>
+	</beans:property>
+</beans:bean>
+```
+
+### Tiles Bean 등록: Annotation 방식
+
+```java
+/**
+ * Config.java 파일
+ * */
+
+@Configuration // Bean 등록 전용 클래스를 선언하기 위한 어노테이션
+public class Config {
+
+	@Bean // Bean 등록을 위한 어노테이션
+	public UrlBasedViewResolver getUrlBasedViewResolver() {
+		UrlBasedViewResolver tilesViewResolver = new UrlBasedViewResolver();
+		
+		tilesViewResolver.setOrder(0); // 순위를 높여 tiles 방식을 가장 먼저 시도하게 함
+		tilesViewResolver.setViewClass(TilesView.class);
+		
+		return tilesViewResolver;
+	}
+	
+	@Bean
+	public TilesConfigurer getTilesConfigurer() {
+		TilesConfigurer tilesConfigurer = new TilesConfigurer();
+		
+		tilesConfigurer.setDefinitions(new String[] {"tiles-definitions 파일 경로"});
+		
+		return tilesConfigurer;
+	}
+}
+```
+
+## tiles 설정
+
 - tiles-definitions 파일 설정
     
     ```xml
@@ -1553,7 +1783,6 @@ public class Service {
     	</body>
     </html>
     ```
-    
 
 # Bean Annotation
 
@@ -1573,7 +1802,8 @@ public class Configuration {
 	@Bean
 	public 라이브러리객체(리턴타입) method() {
 		라이브러리객체 result = new 라이브러리객체();
-		urlBasedViewResolver.setOrder(0); // 값을 지정해야 하는 필드가 있을 경우 세터 이용
+		// 라이브러리 객체에 값을 지정해야 하는 필드(=beans:property or property 태그)가 있을 경우 세터 이용
+		result.setField(field값);
 		return result;
 	}
 }
