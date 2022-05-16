@@ -1525,9 +1525,11 @@ public List<String> ajax(서버에게 보낼 데이터 정보(parameter 정보))
 
 ## 사용 설정
 
-- MyBatis-Spring 사용 설정을 기반으로 추가
+### dependency 추가
+
+- MyBatis-Spring 사용 설정을 기반으로 dependency 추가
     
-    [https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#사용-설정](https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#%EC%82%AC%EC%9A%A9-%EC%84%A4%EC%A0%95)
+    [https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#](https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#%EC%82%AC%EC%9A%A9-%EC%84%A4%EC%A0%95)dependency-추가
     
 
 ```xml
@@ -1542,25 +1544,72 @@ public List<String> ajax(서버에게 보낼 데이터 정보(parameter 정보))
 </dependency>
 ```
 
-```xml
-<!-- mybatis-context.xml -->
+### Bean 등록
 
-<!-- transaction 옵션 설정: xml 방식 사용 시 -->
-<tx:advice transaction-manager="transactionManager" id="txAdvice">
-	<tx:attributes>
-		<tx:method name="트랜잭션 적용할 메소드"/><!-- <tx:method/> 태그 속성은 아래 필기 참고 -->
-		<!-- 와일드카드로 묶이지 않는 여러 메소드에 적용하고 싶을 경우 <tx:method> 태그 추가 작성 가능 -->
-	</tx:attributes>
-</tx:advice>
-
-<aop:config>
-	<!-- 트랜잭션 advice 등록 -->
-	<aop:advisor advice-ref="txAdvice" pointcut="정규 표현식"/> 
-</aop:config>
-
-<!-- transaction 옵션 설정: annotation 방식 사용 시 -->
-<tx:annotation-driven transaction-manager="transactionManager"/>
-```
+- MyBatis-Spring 사용 설정을 기반으로 dependency 추가
+    
+    [https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#Bean-](https://github.com/yudaGim/TIL/blob/main/Framework/Spring_library/MyBatis-Spring.md#%EC%82%AC%EC%9A%A9-%EC%84%A4%EC%A0%95)등록
+    
+- xml 방식
+    
+    ```xml
+    <!-- mybatis-context.xml -->
+    
+    <!-- transaction 옵션 설정: xml 방식 사용 시 -->
+    <tx:advice transaction-manager="transactionManager" id="txAdvice">
+    	<tx:attributes>
+    		<tx:method name="트랜잭션 적용할 메소드"/><!-- <tx:method/> 태그 속성은 아래 필기 참고 -->
+    		<!-- 와일드카드로 묶이지 않는 여러 메소드에 적용하고 싶을 경우 <tx:method> 태그 추가 작성 가능 -->
+    	</tx:attributes>
+    </tx:advice>
+    
+    <aop:config>
+    	<!-- 트랜잭션 advice 등록 -->
+    	<aop:advisor advice-ref="txAdvice" pointcut="정규 표현식"/> 
+    </aop:config>
+    
+    <!-- transaction 옵션 설정: annotation 방식 사용 시 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    ```
+    
+- Annotation 방식
+    
+    ```java
+    /**
+     * Config.java
+     * */
+    
+    /**
+     * <tx:annotation-driven transaction-manager="transactionManager"/> 태그를 대신하기 위해
+     * TransactionManagementConfigurer 구현하고 @EnableTransactionManagement 어노테이션 입력
+     * */
+    @EnableTransactionManagement
+    public class Config implements TransactionManagementConfigurer {
+    	
+    /**
+    	 * transaction 옵션 설정
+    	 * */
+    	@Bean // Bean 등록을 위한 어노테이션
+    	public DataSourceTransactionManager getTransactionManager() {
+    		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+    		
+    		transactionManager.setDataSource(getBasicDataSource());
+    		
+    		return transactionManager;
+    	}
+    	
+    	/**
+    	 * TransactionManagementConfigurer 인터페이스를 구현해 오버라이딩된 메소드
+    	 * TransactionManager를 확장한 DataSourceTransactionManager를 사용할 것이기 때문에
+    	 * DataSourceTransactionManager를 리턴하는 getTransactionManager() 메소드를 리턴
+    	 * */
+    	@Override
+    	public TransactionManager annotationDrivenTransactionManager() {
+    		return this.getTransactionManager();
+    	}
+    }
+    ```
+    
 
 ### 트랜잭션 전파
 
@@ -1623,14 +1672,20 @@ public List<String> ajax(서버에게 보낼 데이터 정보(parameter 정보))
     - 트랜잭션을 rollback하지 않을 exception 타입 설정
     - 기본적으로 비체크 예외가 일어났을 때만 rollback: 체크 예외는 실행된 곳까지 commit
 
-```java
-// xml 방식: 변화 없음
+## 예제 코드
 
+### xml 방식
+
+```java
 @Service
 public class Service {
-	public int method(TransferDTO transfer) {}
+	public int method(TransferDTO transfer) {
+		트랜잭션 실행문;
+	}
 }
 ```
+
+### Annotation 방식
 
 ```java
 // annotation 방식
@@ -1642,8 +1697,9 @@ public class Service {
 
 	// 클래스 안의 특정 메소드에만 트랜잭션 처리를 하고 싶을 때 메소드명 위에 어노테이션 사용
 	@Transactional(속성 = "속성값", 속성 = "속성값"...)
-	public int method(TransferDTO transfer) {}
-
+	public int method(TransferDTO transfer) {
+		트랜잭션 실행문;
+	}
 }
 ```
 
