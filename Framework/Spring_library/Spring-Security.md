@@ -61,12 +61,14 @@
     <version>5.3.13.RELEASE</version>
 </dependency>
 
-<!-- spring-security-taglibs 추가 -->
+<!-- UI 처리를 위한 spring-security-taglibs 추가 -->
 <dependency>
     <groupId>org.springframework.security</groupId>
     <artifactId>spring-security-taglibs</artifactId>
     <version>5.3.13.RELEASE</version>
 </dependency>
+
+<!-- DB 사용 시 DB dependency도 추가 -->
 ```
 
 ### xml 설정
@@ -137,7 +139,7 @@
 		logout-url: 로그아웃 요청 경로, 기본값="/logout"
 		invalidate-session: 기존 세션 제거 여부, 기본값="true"
 		delete-cookies: 로그아웃 시 삭제할 쿠키 이름, 콤마로 구분
-		logout-success-url: 로그아웃 후 이동할 경로, 기본값="/"
+		logout-success-url: 로그아웃 후 이동할 경로, 기본값="/login?logout"
 		success-handler-ref: 로그아웃 정공 시 이동처리하는 LogoutSuccessHandler 지정
 	-->
 	<security:logout logout-url="경로" invalidate-session="boolean" delete-cookies="쿠키명" logout-success-url="/"/>
@@ -156,6 +158,20 @@
 		</security:user-service>
 	</security:authentication-provider>
 </security:authentication-manager>
+```
+
+```xml
+<!--
+	root-context.xml: 
+-->
+
+<!-- filter 기반 Spring Security가 사용할 수 있도록 service, repository, annotation 기반 DB 문서 등록 -->
+<context:component-scan base-package="경로"/>
+
+<!-- 암호화 사용할 경우 비밀번호를 암호화하는 PasswordEncoder 구현체 클래스 등록 -->
+<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="passwordEncoder"/>
+<bean class="org.springframework.security.crypto.password.StandardPasswordEncoder"  id="passwordEncoder"/>
+<!-- 둘 중 원하는 것 하나만 등록 -->
 ```
 
 ## 참고
