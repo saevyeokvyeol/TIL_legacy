@@ -130,6 +130,7 @@
 		password-parameter: 로그인 요청 경로(로그인 폼을 보낼 경로), 기본값="passowrd"
 		default-target-url: 로그인 성공 시 이동 경로, 기본값="/"
 		authentication-failure-url: 인증 실패 시 이동 경로, 기본값="/login?error"
+		authentication-failure-handler-ref: 인증 실패 시 실행할 핸들러 등록
 	-->
 	<security:form-login login-page="경로" login-processing-url="경로"/>
 	
@@ -145,27 +146,36 @@
 	<security:logout logout-url="경로" invalidate-session="boolean" delete-cookies="쿠키명" logout-success-url="/"/>
 </security:http>
 
-<!--
-	Spring Security가 제공하는 in-memory 기능 설정
-	: 테스트용 아이디와 비밀번호, 권한을 xml파일에 저장할 수 있음
-	  SpringSecurity 5.x부터 PasswordEncoder는 필수 -> 비밀번호를 설정 시 필수적으로 접두어 입력
-	  접두어 {noop}는 NoOpPasswordEncoder 암호화 구현체 사용을 의미(=암호화 없이 평문 사용)
--->
 <security:authentication-manager>
+	<!--
+		Spring Security가 제공하는 in-memory 기능 설정 방식
+		: 테스트용 아이디와 비밀번호, 권한을 xml파일에 저장할 수 있음
+		  SpringSecurity 5.x부터 PasswordEncoder는 필수 -> 비밀번호를 설정 시 필수적으로 접두어 입력
+		  {noop} - NoOpPasswordEncoder(=암호화 없이 평문 사용)
+		  {bcrypt} - BCryptPasswordEncoder
+		  {} - BCryptPasswordEncoder
+	-->
 	<security:authentication-provider>
 		<security:user-service>
 			<security:user name="유저 아이디" password="{접두어}비밀번호" authorities="ROLE_권한명"/>
 		</security:user-service>
 	</security:authentication-provider>
+
+	<!--
+		authentication-provider 구현체 등록 방식
+		: DB에 저장된 정보를 바탕으로 인증 시행
+	-->
+	<security:authentication-provider ref="객체 id값"/>
 </security:authentication-manager>
 ```
 
 ```xml
 <!--
-	root-context.xml: 
+	root-context.xml
+	: 필터 기반 Spring Security가 사용할 객체를 스캔하고 클래스를 등록
 -->
 
-<!-- filter 기반 Spring Security가 사용할 수 있도록 service, repository, annotation 기반 DB 문서 등록 -->
+<!-- filter 기반 Spring Security가 사용해야 하는 service, repository, annotation 기반 DB 문서 등록 -->
 <context:component-scan base-package="경로"/>
 
 <!-- 암호화 사용할 경우 비밀번호를 암호화하는 PasswordEncoder 구현체 클래스 등록 -->
@@ -174,7 +184,98 @@
 <!-- 둘 중 원하는 것 하나만 등록 -->
 ```
 
-## 참고
+## 예제 코드: 설정 레퍼런스
+
+### authentication-failure-handler-ref
+
+```java
+/**
+ * AuthenticationFailureHandler를 구현해 인증에 실패했을 때 호출될 메소드를 담은 핸들러 제작
+ * : 제작 후 경로를 스캔한 뒤 security:form-login 태그의 authentication-failure-handler-ref 속성값으로 입력해야 사용 가능
+ * */
+@Service
+public class AuthenticationFailureHandler implements AuthenticationFailureHandler {
+
+	@Override
+	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException exception) throws IOException, ServletException {
+		/**
+		 * 인증에 실패했을 때 할 일 제작
+		 * DispatcherServlet 이전에 동작하기 때문에 ModelAndView 사용 불가
+		 * : 이동하고 싶을 때에는 request를 이용해 리다이렉트나 포워드 방식으로 이동해야 함
+		 * */
+	}
+
+}
+```
+
+### security:authentication-provider ref
+
+```java
+/**
+ * 인증 시 사용할 정보를 DB에서 가져오고 인증 성공 시 정보를 저장하기 위한 객체
+ * 제작 후 경로를 스캔한 뒤 security:authentication-provider 태그의 ref 속성값으로 입력해야 사용 가능
+ * */
+@Service
+@RequiredArgsConstructor
+public class AuthenticationProvider implements AuthenticationProvider {
+	
+	private final MemberDAO memberDAO; // 인증 시 DB와 연결되어 아이디와 비밀번호(=계정 정보)를 가져올 DAO
+	private final AuthoritiesDAO authoritiesDAO; // 인증 성공 시 DB와 연결되어 해당 아이디가 가지고있는 권한을 가져올 DAO
+	private final PasswordEncoder passwordEncoder; // 비밀번호를 암호화할 인코더(암호화 인코더 객체가 등록되지 않으면 주입X, 에러 발생)
+	
+	/**
+	 * 로그인 폼에서 username, password가 전송되면 UsernamePasswordAuthenticationToken 객체를 만들어 인수로 전달
+	 * -> 전달된 인수에서 username(=아이디)과 credentials(=비밀번호)를 꺼내 인증처리(로그인)
+	 *    성공 시 인증된 사용자의 정보와 권한을 가져와 Authentication에 저장해 리턴
+	 *    실패 시 예외(AuthenticationException)를 발생
+	 * */
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		// 1. username(=id)를 꺼내 Member 테이블의 사용자 정보와 비교
+		String id = authentication.getName();
+		Member member = memberDAO.selectMemberById(id);
+		
+		// 2. 1이 없으면 예외 발생
+		if(member == null) throw new UsernameNotFoundException(에러 메세지);
+		
+		// 3. 1이 있으면 인수로 전달된 평문과 DB에 저장된 암호화 비밀번호를 비교
+		String password = authentication.getCredentials().toString();
+		boolean result = passwordEncoder.matches(password, member.getPassword());
+		
+		// 4. 3이 일치하지 않으면 예외 발생
+		if(!result) throw new UsernameNotFoundException(에러 메세지);
+		
+		// 5-1. 일치하면 DB에서 List<Authority> 타입을 꺼냄
+		List<Authority> authoritiesList = authoritiesDAO.selectAuthorityByUserName(id);
+		
+		// 5-2. 꺼낸 List<Authority> 타입을 security에서 사용하는 권한 타입으로 변환
+		List<SimpleGrantedAuthority> simpleGrantedList = new ArrayList<SimpleGrantedAuthority>();
+		for(Authority authority : authoritiesList) {
+			simpleGrantedList.add(new SimpleGrantedAuthority(authority.getRole()));
+		}
+		
+		// 5-3. Authentication 구현체를 생성해 객체 안에 사용자 정보와 권한을 저장
+		//      UsernamePasswordAuthenticationToken에 저장하는 정보는 차례로 계정 정보(principal), 비밀번호, 권한 리스트
+		UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken
+			= new UsernamePasswordAuthenticationToken(member, null, simpleGrantedList);
+		
+		// 6. 생성된 Authentication 객체 리턴
+		return usernamePasswordAuthenticationToken;
+	}
+
+	/**
+	 * 인수로 전달된 인증 정보(=사용자가 입력한 로그인 정보)가 유효한 객체인지 판단해주는 메소드
+	 * : authenticate보다 먼저 호출되며 해당 메소드가 true를 리턴해야 authenticate 메소드 호출
+	 * */
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+	}
+}
+```
+
+## 예제 코드: 기타 참고 코드
 
 ### 예약어
 
@@ -195,4 +296,25 @@ ${pageContext.request.userPrincipal} <!-- userPrincipal: 로그인 시 로그인
 <form action="경로" method="post">
 	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
 </form>
+```
+
+## taglib
+
+> JSP에서 권한, 로그인 여부에 따라 UI를 변경할 수 있도록 태그 라이브러리 지원
+> 
+
+```html
+<!--
+	sec:authorize
+	: access 속성에 springEL에 대응하는 권한이 있을 경우 태그 내부에 작성한 코드를 출력함
+	  springEL 참고 - https://docs.spring.io/spring-security/site/docs/4.2.x/reference/html/el-access.html
+-->
+<sec:authorize></sec:authorize>
+
+<!--
+	sec:authentication
+	: Authentication에 저장한 principal을 출력하는 객체
+	  property 속성에 principal이나 principal.필드를 입력하면 principal로 저장된 객체를 출력함
+-->
+<sec:authentication property=""/>
 ```
