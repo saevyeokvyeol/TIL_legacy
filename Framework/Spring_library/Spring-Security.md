@@ -71,7 +71,7 @@
 <!-- DB 사용 시 DB dependency도 추가 -->
 ```
 
-### xml 설정
+### 기본 xml 설정
 
 ```xml
 <!-- web.xml -->
@@ -99,6 +99,23 @@
 	<url-pattern>/*</url-pattern> <!-- 루트 밑의 모든 요청에 대응 -->
 </filter-mapping>
 ```
+
+```xml
+<!--
+	root-context.xml
+	: 필터 기반 Spring Security가 사용할 객체를 스캔하고 클래스를 등록
+-->
+
+<!-- filter 기반 Spring Security가 사용해야 하는 service, repository, annotation 기반 DB 문서 등록 -->
+<context:component-scan base-package="경로"/>
+
+<!-- 암호화 사용할 경우 비밀번호를 암호화하는 PasswordEncoder 구현체 클래스 등록 -->
+<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="passwordEncoder"/>
+<bean class="org.springframework.security.crypto.password.StandardPasswordEncoder"  id="passwordEncoder"/>
+<!-- 둘 중 원하는 것 하나만 등록 -->
+```
+
+### xml 기반 SpringSecurity 설정
 
 ```xml
 <!--
@@ -169,19 +186,62 @@
 </security:authentication-manager>
 ```
 
-```xml
-<!--
-	root-context.xml
-	: 필터 기반 Spring Security가 사용할 객체를 스캔하고 클래스를 등록
--->
+### Annotation 기반 SpringSecurity 설정
 
-<!-- filter 기반 Spring Security가 사용해야 하는 service, repository, annotation 기반 DB 문서 등록 -->
-<context:component-scan base-package="경로"/>
+```java
+@Configuration
+@RequiredArgsConstructor
+/**
+ * SpringSecurity를 자바 기반으로 설정하기 위해 @EnableWebSecurity 어노테이션 생성, WebSecurityConfigurerAdapter 상속
+ * */
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	private final AuthenticationFailureHandler AuthenticationFailureHandler;
+	private final AuthenticationProvider AuthenticationProvider;
 
-<!-- 암호화 사용할 경우 비밀번호를 암호화하는 PasswordEncoder 구현체 클래스 등록 -->
-<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" id="passwordEncoder"/>
-<bean class="org.springframework.security.crypto.password.StandardPasswordEncoder"  id="passwordEncoder"/>
-<!-- 둘 중 원하는 것 하나만 등록 -->
+	/**
+	 * security:http 태그 설정을 대신하기 위한 메소드
+	 * */
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		// configure 메소드는 파라미터로 들어온 http에 필요한 메소드를 이으며 제작
+		
+		http
+		.authorizeRequests() // security:intercept-url 태그를 대신하는 메소드
+		.antMatchers(경로) // pattern 속성 입력용 메소드: ant-style 입력 가능한 메소드
+		.authenticated() // access 속성: 속성값이 isAuthenticated()일 경우
+		.antMatchers(경로)
+		.hasRole(권한명) // access 속성: 속성값이 hasRole()일 경우
+		.and() // 태그 하나가 끝날 때마다 .and() 메소드 입력
+
+		.csrf().disable() // <security:csrf disabled="true"/> 태그를 대신하는 메소드
+		
+		.formLogin() // security:form-login 태그를 대신하는 메소드
+		.loginPage(경로) // login-page 속성
+		.loginProcessingUrl(경로) // login-processing-url 속성
+		.usernameParameter(파라미터명) // username-parameter 속성
+		.passwordParameter(파라미터명) // password-parameter 속성
+		.defaultSuccessUrl(경로) // default-target-url 속성
+		.failureHandler(핸들러 객체) // authentication-failure-handler-ref 속성
+		.and()
+		
+		.logout() // security:logout 태그를 대신하는 메소드
+		.logoutUrl(경로) // logout-url 속성
+		.invalidateHttpSession(boolean) // invalidate-session 속성
+		.deleteCookies(삭제할 쿠키명) // delete-cookies 속성
+		.logoutSuccessUrl(경로) // logout-success-url 속성
+		.and();
+	}
+	
+	/**
+	 * security:authentication-provider 태그 설정을 대신하기 위한 메소드
+	 * */
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.authenticationProvider(memberAuthenticationProvider);
+	}
+}
 ```
 
 ## 예제 코드: 설정 레퍼런스
@@ -205,7 +265,6 @@ public class AuthenticationFailureHandler implements AuthenticationFailureHandle
 		 * : 이동하고 싶을 때에는 request를 이용해 리다이렉트나 포워드 방식으로 이동해야 함
 		 * */
 	}
-
 }
 ```
 
