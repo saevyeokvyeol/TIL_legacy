@@ -5,8 +5,8 @@
 ## Spring Security 특징
 
 - 사용자를 식별(인증)하고 기능의 사용 가능 여부를 검사(인가)해주는 오픈 소스 프레임워크
-- 보편적으로 사용하는 인증, 인가, UI 처리를 제공
-- 비밀번호, 결제 정보를 암호화할 수 있는 암호화 기능 제공
+- 보편적으로 사용하는 인증, 인가, UI 처리 기본 구현 제공
+- 비밀번호, 결제 정보 등을 암호화할 수 있는 암호화 기능 제공(복호화 불가)
 - 테스트 용으로 사용 가능한 in-Memory 기능 제공
 
 ## 관련 용어
@@ -76,18 +76,23 @@
 ```xml
 <!-- web.xml -->
 
-<!-- Spring Security는 filter 기반이기 때문에 context-param을 통해 등록 -->
+<!--
+	Spring Security는 filter 기반이기 때문에 context-param을 통해 등록
+
+	context-param: 모든 servlet과 filter가 공유하는 영역을 등록
+-->
 <context-param>
 	<param-name>contextConfigLocation</param-name>
 	<param-value>
-		/WEB-INF/spring/security-context.xml
+		경로/security-context.xml
 	</param-value>
 </context-param>
 
 <!--
 	Spring Security 등록
-	: filter-name은 반드시 springSecurityFilterChain으로 사용
+	: filter-name은 반드시 springSecurityFilterChain으로 지정(대소문자 구분)
 	  security가 등록되면 springSecurity 설정 xml 파일 필요
+	  - DispatcherServlet으로 들어가기 전에 필터 처리하는 것이기 때문에 servlet-context.xml 문서에 설정 불가
 -->
 <filter>
 	<filter-name>springSecurityFilterChain</filter-name>
@@ -119,12 +124,12 @@
 
 ```xml
 <!--
-	security-context.xml: Spring Security는 filter 기반이기 때문에 appServlet 폴더가 아닌 spring 폴더에 넣음
+	security-context.xml
 	namespace에서 security - http://www.springframework.org/schema/security 선택 시 태그 사용 가능
 -->
 
 <!--
-	사용자 요청이 들어오면 가로챌 정보를 설정
+	사용자 요청이 들어왔을 때 가로챌(=처리할) 정보를 설정
 	
 	use-expressions: true 설정 시 SpringEL 사용 가능
 	                 SpringEL 참고 - https://docs.spring.io/spring-security/site/docs/4.2.x/reference/html/el-access.html
@@ -134,31 +139,34 @@
 	<!--
 		security:intercept-url: 특정 url 패턴에 대한 권한을 설정
 		                        권한이 없는 경우 403 forbidden 발생
-		                        필요한 만큼 추가 작성 가능
+		                        필요한 만큼 태그 추가 작성 가능
 	-->
 	<security:intercept-url pattern="url 패턴(ant-style 사용 가능)" access="SpringEL"/>
+
+	<!-- csrf token 기능을 사용하지 않을 때 입력 -->
+	<security:csrf disabled="true"/>
 
 	<!--
 		Spring Security가 제공하는 로그인폼 대신 사용자 정의 로그인폼을 사용하고 싶을 때 사용하는 태그
 
-		login-page: 로그인 폼 경로, 기본값="/login"
-		login-processing-url: 로그인 요청 경로(로그인 폼을 보낼 경로), 기본값="/login"
-		username-parameter: 로그인 요청 경로(로그인 폼을 보낼 경로), 기본값="username"
-		password-parameter: 로그인 요청 경로(로그인 폼을 보낼 경로), 기본값="passowrd"
-		default-target-url: 로그인 성공 시 이동 경로, 기본값="/"
-		authentication-failure-url: 인증 실패 시 이동 경로, 기본값="/login?error"
-		authentication-failure-handler-ref: 인증 실패 시 실행할 핸들러 등록
+		login-page: 로그인 폼 경로, Controller와 연결X
+		login-processing-url: 로그인 요청 경로(로그인 폼을 보낼 경로), Controller와 연결X
+		username-parameter: form의 id(=username) 입력 input 태그의 name 속성값
+		password-parameter: form의 password 입력 input 태그의 name 속성값
+		default-target-url: 로그인 성공 시 이동 경로
+		authentication-failure-url: 인증 실패 시 이동 경로
+		authentication-failure-handler-ref: 인증 실패 시 실행할 핸들러 객체 지정
 	-->
 	<security:form-login login-page="경로" login-processing-url="경로"/>
 	
 	<!--
 		로그아웃 기능을 활성화하고 싶을 때 사용하는 태그
 
-		logout-url: 로그아웃 요청 경로, 기본값="/logout"
-		invalidate-session: 기존 세션 제거 여부, 기본값="true"
+		logout-url: 로그아웃 요청 경로, Controller와 연결X
+		invalidate-session: 기존 세션 제거 여부
 		delete-cookies: 로그아웃 시 삭제할 쿠키 이름, 콤마로 구분
-		logout-success-url: 로그아웃 후 이동할 경로, 기본값="/login?logout"
-		success-handler-ref: 로그아웃 정공 시 이동처리하는 LogoutSuccessHandler 지정
+		logout-success-url: 로그아웃 후 이동할 경로
+		success-handler-ref: 로그아웃 성공 시 실행할 핸들러 객체 지정
 	-->
 	<security:logout logout-url="경로" invalidate-session="boolean" delete-cookies="쿠키명" logout-success-url="/"/>
 </security:http>
@@ -167,10 +175,13 @@
 	<!--
 		Spring Security가 제공하는 in-memory 기능 설정 방식
 		: 테스트용 아이디와 비밀번호, 권한을 xml파일에 저장할 수 있음
+
 		  SpringSecurity 5.x부터 PasswordEncoder는 필수 -> 비밀번호를 설정 시 필수적으로 접두어 입력
 		  {noop} - NoOpPasswordEncoder(=암호화 없이 평문 사용)
 		  {bcrypt} - BCryptPasswordEncoder
-		  {} - BCryptPasswordEncoder
+
+		  authorities 속성값은 "ROLE_권한명" 형식으로 입력하고 모두 대문자로 작성
+		  권한을 여러 개 주고 싶을 때는 콤마로 구분해 입력
 	-->
 	<security:authentication-provider>
 		<security:user-service>
@@ -192,20 +203,20 @@
 @Configuration
 @RequiredArgsConstructor
 /**
- * SpringSecurity를 자바 기반으로 설정하기 위해 @EnableWebSecurity 어노테이션 생성, WebSecurityConfigurerAdapter 상속
+ * SpringSecurity를 자바 기반으로 설정하기 위해 @EnableWebSecurity 어노테이션 생성 후 WebSecurityConfigurerAdapter 상속
  * */
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
-	private final AuthenticationFailureHandler AuthenticationFailureHandler;
-	private final AuthenticationProvider AuthenticationProvider;
+	private final AuthenticationFailureHandler AuthenticationFailureHandler; // 로그아웃 실패 시 실행할 핸들러 객체 생성
+	private final AuthenticationProvider AuthenticationProvider; // authentication-provider 구현체 생성
 
 	/**
 	 * security:http 태그 설정을 대신하기 위한 메소드
 	 * */
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// configure 메소드는 파라미터로 들어온 http에 필요한 메소드를 이으며 제작
+		// configure 메소드는 http에 메소드 체인으로 이용해 제작
 		
 		http
 		.authorizeRequests() // security:intercept-url 태그를 대신하는 메소드
@@ -244,7 +255,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 }
 ```
 
-## 예제 코드: 설정 레퍼런스
+## 예제 코드: 설정 레퍼런스 문서
 
 ### authentication-failure-handler-ref
 
@@ -281,7 +292,7 @@ public class AuthenticationProvider implements AuthenticationProvider {
 	
 	private final MemberDAO memberDAO; // 인증 시 DB와 연결되어 아이디와 비밀번호(=계정 정보)를 가져올 DAO
 	private final AuthoritiesDAO authoritiesDAO; // 인증 성공 시 DB와 연결되어 해당 아이디가 가지고있는 권한을 가져올 DAO
-	private final PasswordEncoder passwordEncoder; // 비밀번호를 암호화할 인코더(암호화 인코더 객체가 등록되지 않으면 주입X, 에러 발생)
+	private final PasswordEncoder passwordEncoder; // 암호화된 비밀번호를 비교할 인코더(암호화 인코더 객체가 등록되지 않으면 주입X, 에러 발생)
 	
 	/**
 	 * 로그인 폼에서 username, password가 전송되면 UsernamePasswordAuthenticationToken 객체를 만들어 인수로 전달
@@ -336,17 +347,30 @@ public class AuthenticationProvider implements AuthenticationProvider {
 
 ## 예제 코드: 기타 참고 코드
 
-### 예약어
+### 자바에서 Security Context에 저장된 사용자 정보 호출
+
+```java
+// 자바에서 Security Context에 저장된 사용자 정보를 가져오는 코드
+// SecurityContextHolder.getContext().getAuthentication()까지만 호출하면 Authentication을 가져올 수 있음
+UserDTO user = (UserDTO)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+```
+
+### userPrincipal
 
 ```html
-${pageContext.request.userPrincipal} <!-- userPrincipal: 로그인 시 로그인 정보를 저장하는 예약어 -->
+<!--
+	userPrincipal
+	: 로그인 시 로그인 정보를 저장하는 예약어
+	  보통 로그인한 회원의 정보를 저장하는 객체를 넣음
+-->
+${pageContext.request.userPrincipal}
 ```
 
 ### csrf token
 
 ```html
 <!--
-	spring security는 기본적으로 csrf 공격을 방어하기 위한 csrf token을 서로 주고받음
+	spring security는 csrf 공격을 방어하기 위해 csrf token을 서로 주고받음
   spring 5.x 이상부터 post 방식으로 form을 보낼 때 반드시 csrf token을 보내야 함
   <security:csrf> 태그로 중지는 가능하지만 보안을 위해 권장X
 
@@ -368,12 +392,39 @@ ${pageContext.request.userPrincipal} <!-- userPrincipal: 로그인 시 로그인
 	: access 속성에 springEL에 대응하는 권한이 있을 경우 태그 내부에 작성한 코드를 출력함
 	  springEL 참고 - https://docs.spring.io/spring-security/site/docs/4.2.x/reference/html/el-access.html
 -->
-<sec:authorize></sec:authorize>
+<sec:authorize access="">
+	출력문
+</sec:authorize>
 
 <!--
 	sec:authentication
 	: Authentication에 저장한 principal을 출력하는 객체
-	  property 속성에 principal이나 principal.필드를 입력하면 principal로 저장된 객체를 출력함
+	  property 속성에 principal이나 principal.필드명을 입력하면 principal로 저장된 객체를 출력함
+	  var 속성을 사용하면 출력X - var 속성값을 변수명으로 변수가 생성되어 표현 언어를 통해 사용 가능
 -->
-<sec:authentication property=""/>
+<sec:authentication property="" var=""/>
+```
+
+## Spring Security Ajax
+
+> Spring Security 환경에서 Ajax를 사용하는 방법
+> 
+
+```jsx
+$.ajax({
+	url : "서버 요청 주소",
+	type : "요청 방식(method방식 : get | post | put | delete)",
+	dateType : "서버가 보내온 데이터(응답) 타입(text | html | xml | json)",
+
+	data : "${_csrf.parameterName}=${_csrf.token}&key값=parameter값", // 기본 방식
+	data : {"${_csrf.parameterName}" : "${_csrf.token}", // json 방식
+	       서버에게 보낼 데이터 정보(parameter 정보)}, // 데이터를 보낼 때 반드시 csrf 토큰을 넘겨야 함
+
+	success : function(서버가 가져온 데이터를 저장할 변수명) {
+		성공했을 때 실행할 함수;
+	},
+	error : function(서버가 가져온 데이터를 저장할 변수명) {
+		실패했을 때 실행할 함수;
+	}
+});
 ```
