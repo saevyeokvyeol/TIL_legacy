@@ -25,7 +25,15 @@
 @AllArgsConstructor // 모든 인수가 들어가는 생성자 생성
 @ToString // toString 메소드 오버라이딩
 @RequiredArgsConstructor // final 필드를 기반으로 생성자를 만들어 초기화: @Autowired 대신 사용
-public class 클래스명{}
+public class 클래스명{
+
+	/*
+	 * 생성자를 통해 반드시 생성해야 하는 필드
+	 * RequiredArgsConstructor 사용 시 @NonNull을 사용한 필드만 생성하는 생성자 생성
+	 * */
+	@NonNull
+	private int number;
+}
 ```
 
 # 주의: @ToString
