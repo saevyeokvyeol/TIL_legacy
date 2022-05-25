@@ -23,7 +23,7 @@
 @Getter // 게터 생성
 @NoArgsConstructor // 아무 인수도 들어가지 않는 생성자 생성
 @AllArgsConstructor // 모든 인수가 들어가는 생성자 생성
-@ToString // toString 메소드 오버라이딩
+@ToString(exclude = "필드명") // toString 메소드 오버라이딩, 출력하고 싶지 않은 필드가 있을 경우 exclude 속성 추가
 @RequiredArgsConstructor // final 필드를 기반으로 생성자를 만들어 초기화: @Autowired 대신 사용
 public class 클래스명{
 
