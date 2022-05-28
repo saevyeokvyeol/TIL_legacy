@@ -92,3 +92,21 @@ spring:
 # 구조
 
 - src/main/resources/static → html, css, img, js 문서
+
+# 단위 테스트
+
+- 스프링과 스프링부트는 단위테스트를 위한 어노테이션 제공
+- 테스트를 위한 메소드 실행 시 서버가 해당 메소드 내부에 있는 코드만 실행한 뒤 자동으로 종료됨
+- 단위테스트 클래스 위치: src/test/java/루트 패키지/
+
+```java
+@SpringBootTest // 테스트용 클래스 선언을 위한 어노테이션
+class TestClass {
+
+	@Test // 테스트용 메소드 선언을 위한 어노테이션
+	void contextLoads() { // 메소드 작성 후 Run As -> JUnit Test
+		System.out.println("TEST");
+	}
+
+}
+```
