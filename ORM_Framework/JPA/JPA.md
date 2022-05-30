@@ -177,7 +177,7 @@ public class Table {
 	 * 즉시 로딩을 지연 로딩으로 만들기: fetch = FetchType.LAZY 속성 입력(권장)
 	 * 지연 로딩을 즉시 로딩으로 만들기: fetch = FetchType.EAGER 속성 입력
 	 * */
-	@OneToMany(mappedBy = "부모 테이블명=현재 객체의 테이블명") // 1:다 연관관계 생성
+		@OneToMany(mappedBy = "자식 객체에 생성된 부모 객체 필드명") // 1:다 연관관계 생성
 	@JoinColumn(name = "컬럼명") // Foreign Key 이름 변경
 	private List<ChildTable> list;
 
