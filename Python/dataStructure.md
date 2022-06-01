@@ -18,6 +18,9 @@ list.insert(20, 2)
 list.pop()
 # list 마지막 요소 삭제
 
+list.remove(30)
+# list에서 30을 삭제
+
 list.count(20)
 # 리스트 안에 20이 몇 개 있는지 확인
 
@@ -33,6 +36,12 @@ list.clear()
 ABC = ["A", "B", "C"]
 list.extend(ABC)
 # list 안에 ABC 리스트의 원소를 추가함
+
+list[3]
+# 리스트의 3번째 자리 원소를 가져옴
+
+list[1:5]
+# 리스트의 1번째 자리 원소부터 5번째 자리 이전(=4번째) 원소까지 가져옴
 ```
 
 ## 문자열을 리스트로 변환
