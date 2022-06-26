@@ -25,4 +25,6 @@ text = sys.stdin.readline()
 
 ```python
 print() # 인수를 출력함
+
+print(*자료구조) # 인수로 입력한 자료구조의 요소를 공백으로 구분해 순서대로 출력함
 ```
