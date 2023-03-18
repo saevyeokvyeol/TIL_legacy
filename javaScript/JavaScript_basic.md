@@ -1,26 +1,15 @@
-# Web FrontEnd
+# JavaScript
 
-## 언어
+## 특징
 
-### HTML
+- 자바의 문법과 비슷한 부분이 많음
+- 객체 기반의 언어로 객체(Object) 개념이 있음
+- 이미 정의되어 호출하면 사용할 수 있는 내장 객체가 존재
+- 속성, 메소드 개념이 있어 객체명.속성명 or 객체명.메소드명()의 방식으로 호출할 수 있음
+- new 키워드를 이용해 새로운 객체를 생성할 수 있음
+- this 키워드를 통해 현재 객체 안의 속성과 메소드에 접근할 수 있음
 
-- Hyper Text Markup Language
-- 화면 구성=구조=GUI를 담당: 주로 사용자 입력값을 받는 폼이나 사용자가 요청한 결과를 화면에 출력
-- 현재는 HTML5 사용
-: 다양한 API 제공(WabStorage, Drag&Drop, Audio, Video, WebSocket) → API이기 때문에 HTML, CSS, JS를 모두 알아야 함
-- 대소문자를 구분하지 않고 오타가 있어도 오류가 발생하지 않음(적용되지 않은 채로 실행)
-
-### CSS
-
-- Cascading Style Sheets
-- HTML에 디자인(화면 레이아웃)을 추가함
-- 과거에는 플래시와 포토샵을 이용해 화면 구성을 시각적으로 풍부하게 만들었지만 현재는 CSS로 대부분 가능함
-- 현재는 CSS3 사용
-: 대소문자를 가림
-  오타가 있어도 오류가 발생하지 않음(적용되지 않은 채로 실행)
-
-### Java Script
-
+### Web FrontEnd로써
 - HTML에 기능을 부여해 Event를 처리(=동작)함
 - 대소문자를 완벽하게 구분함
 - 자바와 비슷한 개념: 객체 기반의 언어
@@ -35,9 +24,6 @@
         1. Angular1 → Angular2: 구글 + 개별 커뮤니티에서 제작
         2. React.js: 페이스북에서 제작
         3. Vue.js: Evan You가 제작
-
-### 특징
-
 - 웹 브라우저를 구성하는 언어이자 웹 브라우저가 해석할 수 있는 언어들
 - 소스가 100% 공개됨
 - CS(Client Side) 언어
@@ -50,24 +36,42 @@ HTML로 사용자가 입력한 값을 back단으로 전송할 수 있지만 페�
 - Static Wab Application: HTML, CSS, JS로 이루어진 프로그램
 Dynamic Wab Application: HTML, CSS, JS + BackEnd 언어로 이루어진 프로그램
 
-# Web BackEnd
+## 적용 방법
 
-## Java EE
+### 인라인
 
-> 웹 브라우저는 HTML, CSS, JS 이외의 언어를 해석할 수 없기 때문에 WebServer + WebApplication Server = WebContainer 필요
-> 
-- Servlet & JSP
-JSP는 HTML, CSS, JS를 작성해 View의 역할을 하고, Servlet은 Controller의 역할을 함
-- ASP
-- PHP
-- 위에 JavaSE를 통해 만든 Model을 합쳐 MVC구조의 Dynamic Wab Application 제작
+```html
+<element onclick="">content</element>
+<!--
+	요소에 직접 입력하는 방식
+	동작에 맞춰 CSS를 바꾸는 등의 간단한 것만 가능함
+-->
+```
 
-# AJax기술
+### 내부 자바스크립트 코드
 
-- 비동기화 통신
-- 화면의 새로고침 없이 서버와 통신해 결과를 받아 화면의 일부분만 갱신(update) 해주는 것
-- JS + XML을 사용하는 기술이었지만 요즘은 jQuery와 JSON을 사용
-    - HTML과 XML
-        - HTML: 이미 DTD에 의해 정의되어 있는 태그만 사용 가능
-        - XML: 필요한 태그를 DTD에 선언해 사용 가능
-                 서로 다른 언어 사이에서 데이터를 주고받을 때 데이터 포맷 형태로 많이 사용
+```html
+<script type="text/javascript">
+	document.write("<h1 style="color=blue">내부 자바스크립트 코드</h1>");
+<script>
+<!--
+	HTML의 script 태그 안에 코드를 입력하는 방식
+	script 태그 안에 HTML과 CSS 모두 사용 가능
+-->
+```
+
+### 외부 자바스크립트 코드
+
+```html
+<!-- HTML -->
+<script type="text/javascript" scr="JS 파일 경로">
+	<!-- 내부에 입력X: 입력해도 적용안됨 -->
+<script>
+```
+
+```jsx
+/* JavaScript */
+<element onclick="">content</element>
+
+/* 	외부 JS파일을 가져오는 방식 */
+```

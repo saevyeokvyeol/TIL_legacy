@@ -1,87 +1,8 @@
-# CSS
 
-## 기본 구성
 
-```css
-/* 
-	여러 선택자에 동일한 속성을 적용하고 싶을 때에는 콤마로,
-	하나의 속성에 여러 값을 줄 때는 공백으로 구
-*/
-element, element {속성: 값; 속성: 값 값; 속성: 값 값 값; ...}
-```
+# 속성의 종류
 
-## 적용 방법
-
-### 인라인Inline
-
-- CSS가 짧게 들어갈 때 주로 사용
-
-```html
-<element style="속성: 값; 속성: 값; 속성: 값;"></element>
-<!-- HTML 파일 내부에서 element의 속성으로 style을 사용 -->
-```
-
-### 내부 스타일 시트Internal
-
-- CSS 길이가 길 때 주로 사용
-
-```html
-<style type="text/css">
-	selector {속성: 값; 속성: 값; 속성: 값; ...}
-</style>
-<!-- HTML 파일 head 태그 안(관례)에서 style 태그를 만들어 적용 -->
-```
-
-### 외부 스타일 시트External
-
-- 여러 웹페이지에서 동일한 형식의 CSS를 적용해야 할 때 주로 사용
-
-```html
-<!-- HTML -->
-<link rel="stylesheet" href="CSS 경로">
-```
-
-```css
-/* CSS */
-selector {속성: 값; 속성: 값; 속성: 값; ...}
-```
-
-## 선택자Selector
-
-```css
-* {} /* html 내의 모든 요소에 적용 */
-
-element {} /* 해당하는 요소에 적용 */
-.class {} /* 해당 클래스에 적용 */
-#id {} /* 해당 아이디에 적용 */
-
-element.class {} /* 해당하는 요소 중에서 클래스값이 같은 것에만 적용 */
-element .class {} /* 해당하는 요소의 자식 중에서 클래스 값이 같은 것에만 적용 */
-
-element1 element2 {} /* 요소 1의 자식 중에서 요소 2인 것에만 적용 */
-element1 > element2 {} /* 요소 1을 직접적인 부모로 두고 있는 요소 2에만 적용 */
-
-[attripute] {} /* 특정 속성을 가진 요소에만 적용 */
-[attripute=value] {} /* 속성값이 value인 요소에만 적용 */
-[attripute~=value] {} /* 속성값에 value가 포함된(여러 속성값 중 하나) 요소에만 적용 */
-[attribute|=value] {} /* 속성값이 value거나 value로 시작하는 요소에만 적용 */
-[attribute^=value] {} /* 속성값이 value로 시작하는 요소에만 적용 */
-[attribute$=value] {} /* 속성값이 value로 끝나는 요소에만 적용 */
-[attribute*=value] {} /* 속성값이 value가 포함된(문자열에 포함) 요소에만 적용 */
-
-element:first-child {} /* 해당하는 요소들 중 첫번째 요소에만 적용 */
-element:last-child {} /* 해당하는 요소들 중 마지막 요소에만 적용 */
-element:nth-child(n) {} /* 해당하는 요소들 중 n번째 요소에만 적용 */
-
-a:link {} /* 방문하지 않은 a 태그에 적용 */
-a:visit {} /* 방문한 a 태그에 적용 */
-a:hover {} /* 마우스를 올린 a 태그에 적용 */
-a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
-```
-
-## 속성의 종류
-
-### font
+## font
 
 ```css
 {font: font-style; font-weight; font-size; line-height; font-family;} /* 아래의 모든 속성 사용 가능 */
@@ -111,7 +32,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 {color: 색상;} /* 폰트 색상 */
 ```
 
-### text
+## text
 
 ```css
 {text-indent: 길이 | 퍼센트;} /* 문단 들여쓰기 */
@@ -136,7 +57,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 {line-height: normal | 길이} /* 줄 사이 간격 조절 */
 ```
 
-### list
+## list
 
 ```css
 {list-style: list-style-type; list-style-position; list-style-image;}
@@ -161,7 +82,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 */
 ```
 
-### background
+## background
 
 ```css
 {background: background-color; background-image; background-repeat; background-attachment; background-position;}
@@ -192,7 +113,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 */
 ```
 
-### box 크기 조정
+## box 크기 조정
 
 ```css
 {margin: 길이 | 퍼센트 (n | n, n | n, n, n | n, n, n, n) | auto;}
@@ -250,7 +171,7 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 */
 ```
 
-### box 위치 조정
+## box 위치 조정
 
 ```css
 {display: 키워드;}
@@ -313,39 +234,4 @@ a:active {} /* 현재 클릭하고 있는 a 태그에 적용 */
 	visible: 기본값, 가시화
 	hidden: 비가시화, but 공간은 차지함
 */
-```
-
-## 반응형 웹
-
-### 내부 스타일 시트Internal
-
-```html
-<style type="text/css" media="screen and (min-width: 길이) and (max-width: 길이)">
-	selector {속성: 값; 속성: 값; 속성: 값; ...}
-</style>
-<!-- style 태그 전체에 특정 값을 줘 해당 값을 만족할 때 스타일을 적용시킴 -->
-```
-
-```html
-<style type="text/css">
-	@import url(css 파일 경로) screen and (min-width: 길이) and (max-width: 길이);
-</style>
-<!-- 태그 안에서 @import를 사용해 값을 만족할 때 해당 CSS파일을 적용시킴 -->
-```
-
-### 외부 스타일 시트External
-
-- 여러 웹페이지에서 동일한 형식의 CSS를 적용해야 할 때 주로 사용
-
-```html
-<!-- HTML -->
-<link rel="stylesheet" href="CSS 경로">
-```
-
-```css
-/* CSS */
-@import screen and (min-width: 길이) and (max-width: 길이);
-selector {속성: 값; 속성: 값; 속성: 값; ...}
-
-/* CSS 파일 내부에 직접 media 속성을 줘 값을 만족할 때 스타일을 적용시킴 */
 ```

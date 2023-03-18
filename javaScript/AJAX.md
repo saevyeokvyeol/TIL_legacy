@@ -1,9 +1,15 @@
 # AJAX: 비동기화 통신
 
-## 개념과 특징
+# 개념과 특징
 
-- 화면의 새로고침 없이 서버와 통신하고 그 결과를 받아 화면 일부분을 갱신해주는 기술
+- 비동기화 통신
+- 화면의 새로고침 없이 서버와 통신해 결과를 받아 화면의 일부분만 갱신(update) 해주는 것
 - 새로운 프로그래밍 언어X: jQuery와 JSON을 활용한 **기술**
+- JS + XML을 사용하는 기술이었지만 요즘은 jQuery와 JSON을 사용
+    - HTML과 XML
+        - HTML: 이미 DTD에 의해 정의되어 있는 태그만 사용 가능
+        - XML: 필요한 태그를 DTD에 선언해 사용 가능
+                 서로 다른 언어 사이에서 데이터를 주고받을 때 데이터 포맷 형태로 많이 사용
 - 브라우저가 내장하고 있는 XMLHttpRequest 객체를 이용
 - JS 문법을 이용해 XMLHttpRequest 생성, open() → send() → onreadystateChange = function(){}
 
